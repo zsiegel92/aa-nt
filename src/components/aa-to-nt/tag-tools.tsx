@@ -1,7 +1,7 @@
 "use client";
 
 import { Copy, FileJson2, Link2, Upload } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -31,11 +31,6 @@ export function TagTools({ inputTag, onApplyInputTag }: TagToolsProps) {
   const [error, setError] = useState<string | null>(null);
   const [isPasteModalOpen, setIsPasteModalOpen] = useState(false);
 
-  const validatedInputTag = useMemo(
-    () => validateInputTagState(inputTag),
-    [inputTag]
-  );
-
   const copyToClipboard = async (value: string) => {
     await navigator.clipboard.writeText(value);
   };
@@ -54,8 +49,17 @@ export function TagTools({ inputTag, onApplyInputTag }: TagToolsProps) {
           <Button
             variant="secondary"
             onClick={() => {
-              setJsonOutput(serializeInputTagToJson(validatedInputTag));
-              setError(null);
+              try {
+                const validatedInputTag = validateInputTagState(inputTag);
+                setJsonOutput(serializeInputTagToJson(validatedInputTag));
+                setError(null);
+              } catch (caughtError) {
+                setError(
+                  caughtError instanceof Error
+                    ? caughtError.message
+                    : "Could not generate the JSON export."
+                );
+              }
             }}
           >
             <FileJson2 className="mr-2 size-4" />
@@ -64,9 +68,18 @@ export function TagTools({ inputTag, onApplyInputTag }: TagToolsProps) {
           <Button
             variant="secondary"
             onClick={() => {
-              const currentUrl = `${window.location.origin}/aa-to-nt`;
-              setShareUrlOutput(buildShareUrl(currentUrl, validatedInputTag));
-              setError(null);
+              try {
+                const validatedInputTag = validateInputTagState(inputTag);
+                const currentUrl = `${window.location.origin}/aa-to-nt`;
+                setShareUrlOutput(buildShareUrl(currentUrl, validatedInputTag));
+                setError(null);
+              } catch (caughtError) {
+                setError(
+                  caughtError instanceof Error
+                    ? caughtError.message
+                    : "Could not generate the share URL."
+                );
+              }
             }}
           >
             <Link2 className="mr-2 size-4" />

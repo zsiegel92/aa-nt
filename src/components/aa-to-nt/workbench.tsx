@@ -4,7 +4,12 @@ import "@/lib/api/browser-client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Download, LoaderCircle, Sparkles } from "lucide-react";
-import { useEffect, useReducer, useState } from "react";
+import {
+  type Dispatch,
+  useEffect,
+  useReducer,
+  useState,
+} from "react";
 import { useSearchParams } from "next/navigation";
 
 import {
@@ -22,7 +27,10 @@ import { downloadBase64File, fileToBase64 } from "@/lib/aa-to-nt/file";
 import { inputTagReducer } from "@/lib/aa-to-nt/state";
 import { validateInputTagState } from "@/lib/aa-to-nt/validation";
 import type { TransformWorkbookRequest } from "@/lib/api/short-types";
-import { decodeInputTagFromUrlValue } from "@/lib/input-tag/share";
+import {
+  buildShareUrl,
+  decodeInputTagFromUrlValue,
+} from "@/lib/input-tag/share";
 
 import { TagTools } from "./tag-tools";
 
@@ -104,9 +112,10 @@ export function AaToNtWorkbench() {
           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         input_file_base64: await fileToBase64(selectedFile),
         input_tag: validatedInputTag,
-        input_share_url: `${window.location.origin}/aa-to-nt?inputTag=${encodeURIComponent(
-          ""
-        )}`,
+        input_share_url: buildShareUrl(
+          `${window.location.origin}/aa-to-nt`,
+          validatedInputTag
+        ),
       };
       const response = await transformMutation.mutateAsync({ body });
       downloadBase64File(
@@ -255,7 +264,7 @@ function CodonMapsPanel({
   dispatch,
 }: {
   inputTag: InputTag;
-  dispatch: React.Dispatch<InputTagAction | { type: "bootstrap"; value: InputTag }>;
+  dispatch: Dispatch<InputTagAction | { type: "bootstrap"; value: InputTag }>;
 }) {
   const aminoAcids = Object.keys(inputTag.codon_maps[0] ?? {}).filter(
     (field): field is keyof CodonMapSpec => field !== "name"
@@ -334,7 +343,7 @@ function RegionsPanel({
   dispatch,
 }: {
   inputTag: InputTag;
-  dispatch: React.Dispatch<InputTagAction | { type: "bootstrap"; value: InputTag }>;
+  dispatch: Dispatch<InputTagAction | { type: "bootstrap"; value: InputTag }>;
 }) {
   const regionNames = inputTag.regions.map((region) => region.name);
   return (
@@ -398,7 +407,7 @@ function RegionsPanel({
           <div className="mt-4 grid gap-4 lg:grid-cols-2">
             <LabeledInput
               label="Start Tail"
-              value={region.start_tail}
+              value={region.start_tail ?? ""}
               onChange={(value) =>
                 dispatch({
                   type: "updateRegion",
@@ -410,7 +419,7 @@ function RegionsPanel({
             />
             <LabeledInput
               label="End Tail"
-              value={region.end_tail}
+              value={region.end_tail ?? ""}
               onChange={(value) =>
                 dispatch({
                   type: "updateRegion",
@@ -422,7 +431,7 @@ function RegionsPanel({
             />
             <LabeledInput
               label="Wild Type"
-              value={region.wild_type}
+              value={region.wild_type ?? ""}
               onChange={(value) =>
                 dispatch({
                   type: "updateRegion",
@@ -436,7 +445,7 @@ function RegionsPanel({
           <div className="mt-4 flex flex-wrap gap-4">
             <Toggle
               label="Substitution"
-              checked={region.substitution}
+              checked={Boolean(region.substitution)}
               onChange={(checked) =>
                 dispatch({
                   type: "updateRegion",
@@ -448,7 +457,7 @@ function RegionsPanel({
             />
             <Toggle
               label="Constant NT"
-              checked={region.constant_nt}
+              checked={Boolean(region.constant_nt)}
               onChange={(checked) =>
                 dispatch({
                   type: "updateRegion",
@@ -460,7 +469,7 @@ function RegionsPanel({
             />
             <Toggle
               label="Reverse Complement Chain"
-              checked={region.reverse_complement}
+              checked={Boolean(region.reverse_complement)}
               onChange={(checked) =>
                 dispatch({
                   type: "updateRegion",
@@ -498,7 +507,7 @@ function DesignsPanel({
   dispatch,
 }: {
   inputTag: InputTag;
-  dispatch: React.Dispatch<InputTagAction | { type: "bootstrap"; value: InputTag }>;
+  dispatch: Dispatch<InputTagAction | { type: "bootstrap"; value: InputTag }>;
 }) {
   return (
     <div className="mt-6 space-y-5">

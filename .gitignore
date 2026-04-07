@@ -13,6 +13,4 @@ scratch/
 node_modules/
 .next/
 coverage/
-openapi.json
-src/api/client/
 PLAN.md

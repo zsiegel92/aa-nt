@@ -1,13 +1,13 @@
 import "server-only";
 
 import {
-  createClient,
   defaultsDefaultsGet,
   transformWorkbookEndpointTransformWorkbookPost,
   type InputTag,
   type TransformWorkbookRequest,
   type TransformWorkbookResponse,
 } from "@/api/client";
+import { createClient } from "@/api/client/client";
 
 const apiUrl = process.env.AA_TO_NT_API_URL;
 const apiKey = process.env.AA_TO_NT_API_KEY;

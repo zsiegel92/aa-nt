@@ -1,0 +1,500 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "AA to NT API",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/healthz": {
+      "get": {
+        "summary": "Healthz",
+        "operationId": "healthz_healthz_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Healthz Healthz Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/defaults": {
+      "get": {
+        "summary": "Defaults",
+        "operationId": "defaults_defaults_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InputTag"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/transform-workbook": {
+      "post": {
+        "summary": "Transform Workbook Endpoint",
+        "operationId": "transform_workbook_endpoint_transform_workbook_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransformWorkbookRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransformWorkbookResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CodonMapSpec": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "A": {
+            "type": "string",
+            "title": "A"
+          },
+          "C": {
+            "type": "string",
+            "title": "C"
+          },
+          "D": {
+            "type": "string",
+            "title": "D"
+          },
+          "E": {
+            "type": "string",
+            "title": "E"
+          },
+          "F": {
+            "type": "string",
+            "title": "F"
+          },
+          "G": {
+            "type": "string",
+            "title": "G"
+          },
+          "H": {
+            "type": "string",
+            "title": "H"
+          },
+          "I": {
+            "type": "string",
+            "title": "I"
+          },
+          "K": {
+            "type": "string",
+            "title": "K"
+          },
+          "L": {
+            "type": "string",
+            "title": "L"
+          },
+          "M": {
+            "type": "string",
+            "title": "M"
+          },
+          "N": {
+            "type": "string",
+            "title": "N"
+          },
+          "P": {
+            "type": "string",
+            "title": "P"
+          },
+          "Q": {
+            "type": "string",
+            "title": "Q"
+          },
+          "R": {
+            "type": "string",
+            "title": "R"
+          },
+          "S": {
+            "type": "string",
+            "title": "S"
+          },
+          "T": {
+            "type": "string",
+            "title": "T"
+          },
+          "V": {
+            "type": "string",
+            "title": "V"
+          },
+          "W": {
+            "type": "string",
+            "title": "W"
+          },
+          "Y": {
+            "type": "string",
+            "title": "Y"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "A",
+          "C",
+          "D",
+          "E",
+          "F",
+          "G",
+          "H",
+          "I",
+          "K",
+          "L",
+          "M",
+          "N",
+          "P",
+          "Q",
+          "R",
+          "S",
+          "T",
+          "V",
+          "W",
+          "Y"
+        ],
+        "title": "CodonMapSpec"
+      },
+      "DesignSpec": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Id"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Version"
+          },
+          "region_designs": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Region Designs"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "version",
+          "region_designs"
+        ],
+        "title": "DesignSpec"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "InputTag": {
+        "properties": {
+          "codon_maps": {
+            "items": {
+              "$ref": "#/components/schemas/CodonMapSpec"
+            },
+            "type": "array",
+            "title": "Codon Maps"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/RegionSpec"
+            },
+            "type": "array",
+            "title": "Regions"
+          },
+          "designs": {
+            "items": {
+              "$ref": "#/components/schemas/DesignSpec"
+            },
+            "type": "array",
+            "title": "Designs"
+          },
+          "design_column_name": {
+            "type": "string",
+            "title": "Design Column Name",
+            "default": ""
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "codon_maps",
+          "regions",
+          "designs"
+        ],
+        "title": "InputTag"
+      },
+      "RegionSpec": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "length": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Length"
+          },
+          "substitution": {
+            "type": "boolean",
+            "title": "Substitution"
+          },
+          "wild_type": {
+            "type": "string",
+            "title": "Wild Type",
+            "default": ""
+          },
+          "predecessor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Predecessor"
+          },
+          "start_tail": {
+            "type": "string",
+            "title": "Start Tail",
+            "default": ""
+          },
+          "end_tail": {
+            "type": "string",
+            "title": "End Tail",
+            "default": ""
+          },
+          "reverse_complement": {
+            "type": "boolean",
+            "title": "Reverse Complement",
+            "default": false
+          },
+          "constant_nt": {
+            "type": "boolean",
+            "title": "Constant Nt",
+            "default": false
+          },
+          "has_custom_upstream_tail_annotation_length": {
+            "type": "boolean",
+            "title": "Has Custom Upstream Tail Annotation Length",
+            "default": false
+          },
+          "has_custom_downstream_tail_annotation_length": {
+            "type": "boolean",
+            "title": "Has Custom Downstream Tail Annotation Length",
+            "default": false
+          },
+          "custom_upstream_tail_annotation_length": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Custom Upstream Tail Annotation Length",
+            "default": 0
+          },
+          "custom_downstream_tail_annotation_length": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Custom Downstream Tail Annotation Length",
+            "default": 0
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "length",
+          "substitution"
+        ],
+        "title": "RegionSpec"
+      },
+      "TransformWorkbookRequest": {
+        "properties": {
+          "input_file_name": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Input File Name"
+          },
+          "input_file_media_type": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Input File Media Type"
+          },
+          "input_file_base64": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Input File Base64"
+          },
+          "input_tag": {
+            "$ref": "#/components/schemas/InputTag"
+          },
+          "input_share_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Input Share Url"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "input_file_name",
+          "input_file_media_type",
+          "input_file_base64",
+          "input_tag"
+        ],
+        "title": "TransformWorkbookRequest"
+      },
+      "TransformWorkbookResponse": {
+        "properties": {
+          "output_file_name": {
+            "type": "string",
+            "title": "Output File Name"
+          },
+          "output_file_media_type": {
+            "type": "string",
+            "title": "Output File Media Type"
+          },
+          "output_file_base64": {
+            "type": "string",
+            "title": "Output File Base64"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "output_file_name",
+          "output_file_media_type",
+          "output_file_base64"
+        ],
+        "title": "TransformWorkbookResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

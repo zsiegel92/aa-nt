@@ -137,14 +137,16 @@ function updateRegionField(
       length: region.constant_nt ? Math.floor(wildType.length / 3) : region.length,
     };
   }
-  if (field === "constant_nt") {
-    const constantNt = Boolean(value);
-    return {
-      ...region,
-      constant_nt: constantNt,
-      length: constantNt ? Math.floor(region.wild_type.length / 3) : region.length,
-    };
-  }
+      if (field === "constant_nt") {
+        const constantNt = Boolean(value);
+        return {
+          ...region,
+          constant_nt: constantNt,
+          length: constantNt
+            ? Math.floor((region.wild_type ?? "").length / 3)
+            : region.length,
+        };
+      }
   if (field === "length") {
     return {
       ...region,
@@ -368,7 +370,9 @@ export function inputTagReducer(state: InputTag, action: InputTagAction): InputT
           .map((region) => ({
             ...region,
             predecessor:
-              region.predecessor === removed.name ? null : region.predecessor,
+              region.predecessor === removed.name
+                ? null
+                : (region.predecessor ?? null),
           })),
         designs: removeRegionAcrossDesigns(state.designs, removed.name),
       };

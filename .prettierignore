@@ -1,0 +1,5 @@
+.next
+.venv
+node_modules
+src/api/client
+openapi.json
