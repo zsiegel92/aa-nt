@@ -1,0 +1,89 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 64 64"
+  fill="none"
+>
+  <defs>
+    <linearGradient id="bg" x1="8" y1="6" x2="56" y2="58" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FBF8EE" />
+      <stop offset="1" stop-color="#DCE8DB" />
+    </linearGradient>
+    <linearGradient id="accent" x1="16" y1="14" x2="48" y2="50" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#295B49" />
+      <stop offset="1" stop-color="#17382E" />
+    </linearGradient>
+    <linearGradient id="warm" x1="18" y1="19" x2="46" y2="45" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#C48653" />
+      <stop offset="1" stop-color="#8E5A33" />
+    </linearGradient>
+  </defs>
+
+  <rect x="5" y="5" width="54" height="54" rx="16" fill="url(#bg)" />
+  <rect
+    x="5"
+    y="5"
+    width="54"
+    height="54"
+    rx="16"
+    stroke="#305240"
+    stroke-opacity="0.18"
+    stroke-width="2"
+  />
+
+  <path
+    d="M22 17C16.6 21.4 15 27.4 15 32C15 36.6 16.6 42.6 22 47"
+    stroke="url(#accent)"
+    stroke-width="3.5"
+    stroke-linecap="round"
+  />
+  <path
+    d="M42 17C47.4 21.4 49 27.4 49 32C49 36.6 47.4 42.6 42 47"
+    stroke="url(#accent)"
+    stroke-width="3.5"
+    stroke-linecap="round"
+  />
+
+  <path
+    d="M21 21L43 43"
+    stroke="url(#warm)"
+    stroke-width="3.25"
+    stroke-linecap="round"
+  />
+  <path
+    d="M43 21L21 43"
+    stroke="url(#warm)"
+    stroke-width="3.25"
+    stroke-linecap="round"
+  />
+
+  <path
+    d="M14 20H34"
+    stroke="url(#accent)"
+    stroke-width="3.5"
+    stroke-linecap="round"
+  />
+  <path
+    d="M31 16L37 20L31 24"
+    stroke="url(#accent)"
+    stroke-width="3.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+
+  <path
+    d="M50 44H30"
+    stroke="url(#accent)"
+    stroke-width="3.5"
+    stroke-linecap="round"
+  />
+  <path
+    d="M33 40L27 44L33 48"
+    stroke="url(#accent)"
+    stroke-width="3.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+
+  <circle cx="22" cy="17" r="2.2" fill="#17382E" />
+  <circle cx="42" cy="47" r="2.2" fill="#17382E" />
+</svg>
