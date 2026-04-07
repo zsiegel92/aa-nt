@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import type { InputTag } from "@/api/client";
@@ -61,18 +61,28 @@ const inputTag: InputTag = {
 };
 
 describe("TagTools", () => {
-  it("only generates JSON when the user clicks the button", () => {
+  it("copies generated JSON with the same button that generates it", async () => {
     const onApplyInputTag = vi.fn();
+    const writeText = vi.fn().mockResolvedValue(undefined);
+
+    Object.assign(navigator, {
+      clipboard: {
+        writeText,
+      },
+    });
 
     render(<TagTools inputTag={inputTag} onApplyInputTag={onApplyInputTag} />);
 
-    expect(
-      screen.getAllByPlaceholderText("Nothing generated yet."),
-    ).toHaveLength(2);
+    fireEvent.click(screen.getByRole("button", { name: /copy json/i }));
 
-    fireEvent.click(screen.getByRole("button", { name: /generate json/i }));
-
+    await waitFor(() => {
+      expect(writeText).toHaveBeenCalledTimes(1);
+    });
+    expect(writeText).toHaveBeenCalledWith(
+      expect.stringContaining('"codon_maps"'),
+    );
     expect(screen.getByDisplayValue(/"codon_maps"/)).toBeInTheDocument();
+    expect(screen.getByText(/json copied to clipboard/i)).toBeInTheDocument();
     expect(onApplyInputTag).not.toHaveBeenCalled();
   });
 

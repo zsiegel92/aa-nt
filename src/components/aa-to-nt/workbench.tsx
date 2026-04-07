@@ -4,17 +4,32 @@ import "@/lib/api/browser-client";
 
 import { useMutation } from "@tanstack/react-query";
 import { Download, LoaderCircle, Sparkles } from "lucide-react";
-import { type Dispatch, useReducer, useState } from "react";
+import { type Dispatch, useMemo, useReducer, useState } from "react";
 
 import { transformWorkbookEndpointTransformWorkbookPostMutation } from "@/api/client/@tanstack/react-query.gen";
-import type { CodonMapSpec, InputTag, RegionSpec } from "@/api/client";
+import type { InputTag, RegionSpec } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  aminoAcidMetadata,
+  codonFrequencyColors,
+  translateWildTypeNucleotides,
+  type AminoAcidCode,
+} from "@/lib/aa-to-nt/codon-metadata";
 import { downloadBase64File, fileToBase64 } from "@/lib/aa-to-nt/file";
+import {
+  countAncestors,
+  countSuccessors,
+  getEligiblePredecessors,
+  getRegionChains,
+  hasSuccessor,
+  sortRegionsByPredecessor,
+} from "@/lib/aa-to-nt/region-chains";
 import { inputTagReducer } from "@/lib/aa-to-nt/state";
 import { validateInputTagState } from "@/lib/aa-to-nt/validation";
 import type { TransformWorkbookRequest } from "@/lib/api/short-types";
 import { buildShareUrl } from "@/lib/input-tag/share";
+import { cn } from "@/lib/utils";
 
 import { TagTools } from "./tag-tools";
 
@@ -25,6 +40,14 @@ type AaToNtWorkbenchProps = {
   initialShareError: string | null;
   loadedFromShareUrl: boolean;
 };
+
+const chainAccentClasses = [
+  "border-l-4 border-l-emerald-500",
+  "border-l-4 border-l-sky-500",
+  "border-l-4 border-l-amber-500",
+  "border-l-4 border-l-rose-500",
+  "border-l-4 border-l-violet-500",
+] as const;
 
 export function AaToNtWorkbench({
   initialInputTag,
@@ -232,19 +255,15 @@ function CodonMapsPanel({
   inputTag: InputTag;
   dispatch: Dispatch<InputTagAction | { type: "bootstrap"; value: InputTag }>;
 }) {
-  const aminoAcids = Object.keys(inputTag.codon_maps[0] ?? {}).filter(
-    (field): field is keyof CodonMapSpec => field !== "name",
-  );
-
   return (
     <div className="mt-6 overflow-x-auto">
-      <table className="min-w-full border-separate border-spacing-y-3">
+      <table className="min-w-full border-separate border-spacing-y-4">
         <thead>
           <tr className="text-left text-xs uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
-            <th className="px-3">Amino Acid</th>
+            <th className="min-w-60 px-3 pb-4">AA</th>
             {inputTag.codon_maps.map((codonMap, index) => (
-              <th className="px-3" key={`${codonMap.name}-${index}`}>
-                <div className="rounded-[1.4rem] border border-[var(--border)] bg-[var(--panel-muted)] p-3">
+              <th className="min-w-96 px-3 pb-4 align-top" key={codonMap.name}>
+                <div className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--panel-muted)] p-4">
                   <Input
                     value={codonMap.name}
                     onChange={(event) =>
@@ -282,28 +301,72 @@ function CodonMapsPanel({
           </tr>
         </thead>
         <tbody>
-          {aminoAcids.map((aminoAcid) => (
-            <tr key={aminoAcid}>
-              <th className="px-3 py-2 text-sm font-semibold">{aminoAcid}</th>
+          {aminoAcidMetadata.map((aminoAcid) => (
+            <tr key={aminoAcid.code}>
+              <th className="px-3 py-2 align-top">
+                <div className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--panel-muted)] p-4 text-left">
+                  <p className="text-lg font-semibold">{aminoAcid.code}</p>
+                  <p className="mt-1 text-sm text-[var(--foreground)]">
+                    {aminoAcid.name}
+                  </p>
+                  <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
+                    {aminoAcid.abbreviation}
+                  </p>
+                </div>
+              </th>
               {inputTag.codon_maps.map((codonMap, index) => (
-                <td className="px-3" key={`${codonMap.name}-${aminoAcid}`}>
-                  <Input
-                    value={codonMap[aminoAcid]}
-                    onChange={(event) =>
-                      dispatch({
-                        type: "updateCodonMap",
-                        index,
-                        field: aminoAcid,
-                        value: event.target.value.toUpperCase(),
-                      })
-                    }
-                  />
+                <td
+                  className="px-3 py-2 align-top"
+                  key={`${codonMap.name}-${aminoAcid.code}`}
+                >
+                  <div className="flex flex-wrap gap-2 rounded-[1.5rem] border border-[var(--border)] bg-white p-4">
+                    {aminoAcid.codons.map((codonOption, codonOptionIndex) => {
+                      const isSelected =
+                        codonMap[aminoAcid.code] === codonOption;
+                      return (
+                        <button
+                          className={cn(
+                            "min-w-18 cursor-pointer rounded-full border px-3 py-2 text-sm font-semibold transition disabled:cursor-not-allowed",
+                            isSelected
+                              ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--foreground)] shadow-sm"
+                              : "border-[var(--border)] bg-[var(--panel-muted)] text-[var(--muted-foreground)] hover:border-[var(--accent)] hover:text-[var(--foreground)]",
+                          )}
+                          key={`${codonMap.name}-${aminoAcid.code}-${codonOption}`}
+                          onClick={() =>
+                            dispatch({
+                              type: "updateCodonMap",
+                              index,
+                              field: aminoAcid.code,
+                              value: codonOption,
+                            })
+                          }
+                          type="button"
+                        >
+                          <span
+                            className="inline-block border-b-2 px-1"
+                            style={{
+                              borderBottomColor:
+                                codonFrequencyColors[codonOptionIndex] ??
+                                codonFrequencyColors[
+                                  codonFrequencyColors.length - 1
+                                ],
+                            }}
+                          >
+                            {codonOption}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </td>
               ))}
             </tr>
           ))}
         </tbody>
       </table>
+      <p className="mt-4 text-right text-sm text-[var(--muted-foreground)]">
+        Codons stay ordered from more to less frequent for each amino acid.
+      </p>
     </div>
   );
 }
@@ -315,35 +378,151 @@ function RegionsPanel({
   inputTag: InputTag;
   dispatch: Dispatch<InputTagAction | { type: "bootstrap"; value: InputTag }>;
 }) {
-  const regionNames = inputTag.regions.map((region) => region.name);
+  const regionIndexByName = useMemo(
+    () =>
+      new Map(inputTag.regions.map((region, index) => [region.name, index])),
+    [inputTag.regions],
+  );
+  const regionChains = useMemo(
+    () => getRegionChains(inputTag.regions),
+    [inputTag.regions],
+  );
+
   return (
-    <div className="mt-6 space-y-4">
-      {inputTag.regions.map((region, index) => (
-        <div
-          key={`${region.name}-${index}`}
-          className="rounded-[1.6rem] border border-[var(--border)] bg-[var(--panel-muted)] p-5"
-        >
-          <div className="grid gap-4 lg:grid-cols-3">
+    <div className="mt-6 space-y-5">
+      {regionChains.map((chain, chainIndex) => {
+        const accentClass =
+          chainAccentClasses[chainIndex % chainAccentClasses.length] ??
+          chainAccentClasses[0];
+
+        return (
+          <section
+            className={cn(
+              "rounded-[1.8rem] border border-[var(--border)] bg-[var(--panel-muted)] p-5",
+              accentClass,
+            )}
+            key={`${chain.head.name}-${chainIndex}`}
+          >
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted-foreground)]">
+                  Chain {chainIndex + 1}
+                </p>
+                <h3 className="mt-1 text-lg font-semibold">
+                  {chain.regions.map((region) => region.name).join(" → ")}
+                </h3>
+              </div>
+              <p className="text-sm text-[var(--muted-foreground)]">
+                {chain.regions.length} region
+                {chain.regions.length === 1 ? "" : "s"} linked by
+                predecessor/successor rules
+              </p>
+            </div>
+
+            <div className="mt-5 space-y-4">
+              {chain.regions.map((region) => {
+                const regionIndex = regionIndexByName.get(region.name);
+                if (regionIndex === undefined) {
+                  return null;
+                }
+                return (
+                  <RegionEditorCard
+                    accentClass={accentClass}
+                    dispatch={dispatch}
+                    key={region.name}
+                    region={region}
+                    regionIndex={regionIndex}
+                    regions={inputTag.regions}
+                  />
+                );
+              })}
+            </div>
+          </section>
+        );
+      })}
+    </div>
+  );
+}
+
+function RegionEditorCard({
+  accentClass,
+  dispatch,
+  region,
+  regionIndex,
+  regions,
+}: {
+  accentClass: string;
+  dispatch: Dispatch<InputTagAction | { type: "bootstrap"; value: InputTag }>;
+  region: RegionSpec;
+  regionIndex: number;
+  regions: readonly RegionSpec[];
+}) {
+  const eligiblePredecessors = getEligiblePredecessors(regions, region.name);
+  const successorPresent = hasSuccessor(regions, region.name);
+  const ancestorCount = countAncestors(regions, region.name);
+  const successorCount = countSuccessors(regions, region.name);
+  const upstreamTailRegionCount = successorCount + 1;
+  const downstreamTailRegionCount = ancestorCount + 1;
+  const encodingMode = region.constant_nt
+    ? "constant"
+    : region.substitution
+      ? "substitution"
+      : "no-wt";
+
+  return (
+    <article className="rounded-[1.6rem] border border-[var(--border)] bg-white p-5 shadow-sm">
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,0.9fr)]">
+        <div className="space-y-5">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="flex-1">
+              <LabeledInput
+                label="Region / Column Name"
+                value={region.name}
+                onChange={(value) =>
+                  dispatch({
+                    type: "updateRegion",
+                    index: regionIndex,
+                    field: "name",
+                    value,
+                  })
+                }
+              />
+            </div>
+            <div className="flex gap-3 pt-7">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() =>
+                  dispatch({ type: "duplicateRegion", index: regionIndex })
+                }
+              >
+                Duplicate
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() =>
+                  dispatch({ type: "deleteRegion", index: regionIndex })
+                }
+              >
+                Delete
+              </Button>
+            </div>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             <LabeledInput
-              label="Region Name"
-              value={region.name}
-              onChange={(value) =>
-                dispatch({
-                  type: "updateRegion",
-                  index,
-                  field: "name",
-                  value,
-                })
+              className={
+                region.length <= 0 ? "border-[var(--danger)]" : undefined
               }
-            />
-            <LabeledInput
-              label="Length (AAs)"
+              disabled={Boolean(region.constant_nt)}
+              label="AA Length"
               type="number"
               value={`${region.length}`}
               onChange={(value) =>
                 dispatch({
                   type: "updateRegion",
-                  index,
+                  index: regionIndex,
                   field: "length",
                   value: Number(value),
                 })
@@ -358,118 +537,343 @@ function RegionsPanel({
                 value={region.predecessor ?? ""}
                 onChange={(event) =>
                   dispatch({
-                    type: "updateRegion",
-                    index,
-                    field: "predecessor",
-                    value: event.target.value || null,
+                    type: "setRegionPredecessor",
+                    index: regionIndex,
+                    predecessor: event.target.value || null,
                   })
                 }
               >
-                <option value="">None</option>
-                {regionNames
-                  .filter((candidateName) => candidateName !== region.name)
-                  .map((candidateName) => (
-                    <option key={candidateName} value={candidateName}>
-                      {candidateName}
-                    </option>
-                  ))}
+                <option value="">
+                  {eligiblePredecessors.length > 0 ? "None" : "---"}
+                </option>
+                {eligiblePredecessors.map((candidate) => (
+                  <option key={candidate.name} value={candidate.name}>
+                    {candidate.name}
+                  </option>
+                ))}
               </select>
             </label>
+            <div className="rounded-[1.2rem] border border-[var(--border)] bg-[var(--panel-muted)] p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
+                Chain Placement
+              </p>
+              <p className="mt-2 text-lg font-semibold">
+                {describeChainPlacement(region.predecessor, successorPresent)}
+              </p>
+              <p className="mt-1 text-sm text-[var(--muted-foreground)]">
+                {region.predecessor
+                  ? `Follows ${region.predecessor}`
+                  : "Starts a new chain"}
+              </p>
+            </div>
           </div>
-          <div className="mt-4 grid gap-4 lg:grid-cols-2">
-            <LabeledInput
-              label="Start Tail"
-              value={region.start_tail ?? ""}
-              onChange={(value) =>
-                dispatch({
-                  type: "updateRegion",
-                  index,
-                  field: "start_tail",
-                  value,
-                })
-              }
-            />
-            <LabeledInput
-              label="End Tail"
-              value={region.end_tail ?? ""}
-              onChange={(value) =>
-                dispatch({
-                  type: "updateRegion",
-                  index,
-                  field: "end_tail",
-                  value,
-                })
-              }
-            />
-            <LabeledInput
-              label="Wild Type"
-              value={region.wild_type ?? ""}
-              onChange={(value) =>
-                dispatch({
-                  type: "updateRegion",
-                  index,
-                  field: "wild_type",
-                  value,
-                })
-              }
-            />
-          </div>
-          <div className="mt-4 flex flex-wrap gap-4">
-            <Toggle
-              label="Substitution"
-              checked={Boolean(region.substitution)}
-              onChange={(checked) =>
-                dispatch({
-                  type: "updateRegion",
-                  index,
-                  field: "substitution",
-                  value: checked,
-                })
-              }
-            />
-            <Toggle
-              label="Constant NT"
-              checked={Boolean(region.constant_nt)}
-              onChange={(checked) =>
-                dispatch({
-                  type: "updateRegion",
-                  index,
-                  field: "constant_nt",
-                  value: checked,
-                })
-              }
-            />
-            <Toggle
-              label="Reverse Complement Chain"
-              checked={Boolean(region.reverse_complement)}
-              onChange={(checked) =>
-                dispatch({
-                  type: "updateRegion",
-                  index,
-                  field: "reverse_complement",
-                  value: checked,
-                })
-              }
-            />
-          </div>
-          <div className="mt-5 flex gap-3">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => dispatch({ type: "duplicateRegion", index })}
-            >
-              Duplicate
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => dispatch({ type: "deleteRegion", index })}
-            >
-              Delete
-            </Button>
+
+          <fieldset className="rounded-[1.3rem] border border-[var(--border)] bg-[var(--panel-muted)] p-4">
+            <legend className="px-2 text-sm font-semibold text-[var(--foreground)]">
+              Wild-Type Behavior
+            </legend>
+            <div className="mt-2 flex flex-wrap gap-3">
+              <RegionModeChip
+                checked={encodingMode === "substitution"}
+                label="Substitution"
+                onChange={() => {
+                  dispatch({
+                    type: "updateRegion",
+                    index: regionIndex,
+                    field: "substitution",
+                    value: true,
+                  });
+                  dispatch({
+                    type: "updateRegion",
+                    index: regionIndex,
+                    field: "constant_nt",
+                    value: false,
+                  });
+                }}
+              />
+              <RegionModeChip
+                checked={encodingMode === "no-wt"}
+                label="No WT"
+                onChange={() => {
+                  dispatch({
+                    type: "updateRegion",
+                    index: regionIndex,
+                    field: "substitution",
+                    value: false,
+                  });
+                  dispatch({
+                    type: "updateRegion",
+                    index: regionIndex,
+                    field: "constant_nt",
+                    value: false,
+                  });
+                  dispatch({
+                    type: "updateRegion",
+                    index: regionIndex,
+                    field: "wild_type",
+                    value: "",
+                  });
+                }}
+              />
+              <RegionModeChip
+                checked={encodingMode === "constant"}
+                label="Constant nt"
+                onChange={() => {
+                  dispatch({
+                    type: "updateRegion",
+                    index: regionIndex,
+                    field: "substitution",
+                    value: false,
+                  });
+                  dispatch({
+                    type: "updateRegion",
+                    index: regionIndex,
+                    field: "constant_nt",
+                    value: true,
+                  });
+                }}
+              />
+            </div>
+            {encodingMode !== "no-wt" ? (
+              <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto_minmax(10rem,0.55fr)] lg:items-center">
+                <LabeledInput
+                  className={
+                    (region.wild_type ?? "").length !== region.length * 3
+                      ? "border-[var(--danger)]"
+                      : undefined
+                  }
+                  label="Wild-Type Nucleotides"
+                  value={region.wild_type ?? ""}
+                  onChange={(value) =>
+                    dispatch({
+                      type: "updateRegion",
+                      index: regionIndex,
+                      field: "wild_type",
+                      value,
+                    })
+                  }
+                />
+                <span className="pt-7 text-center text-2xl text-[var(--muted-foreground)]">
+                  ←
+                </span>
+                <div className="pt-7">
+                  <div className="rounded-[1.2rem] border border-[var(--border)] bg-white px-4 py-3 font-mono text-sm tracking-[0.22em] text-[var(--foreground)]">
+                    {translateWildTypeNucleotides(
+                      region.wild_type ?? "",
+                      region.length,
+                    ) || "?"}
+                  </div>
+                </div>
+              </div>
+            ) : null}
+          </fieldset>
+
+          <div className="grid gap-4 lg:grid-cols-2">
+            {region.predecessor ? (
+              <InheritedTailNotice
+                label="Nucleotide Upstream Tail"
+                message="Inherited from the chain head. Only the first region in a chain owns the upstream tail."
+              />
+            ) : (
+              <TailEditor
+                annotationEnabled={Boolean(
+                  region.has_custom_upstream_tail_annotation_length,
+                )}
+                annotationLength={
+                  region.custom_upstream_tail_annotation_length ?? 0
+                }
+                annotationLengthLabel="Upstream Annotation Length"
+                dispatch={dispatch}
+                field="start_tail"
+                hasCustomField="has_custom_upstream_tail_annotation_length"
+                inputLabel={`Nucleotide Upstream Tail (${upstreamTailRegionCount} region${upstreamTailRegionCount === 1 ? "" : "s"})`}
+                lengthField="custom_upstream_tail_annotation_length"
+                region={region}
+                regionIndex={regionIndex}
+              />
+            )}
+
+            {successorPresent ? (
+              <InheritedTailNotice
+                label="Nucleotide Downstream Tail"
+                message="Inherited by the chain tail. Only the last region in a chain owns the downstream tail."
+              />
+            ) : (
+              <TailEditor
+                annotationEnabled={Boolean(
+                  region.has_custom_downstream_tail_annotation_length,
+                )}
+                annotationLength={
+                  region.custom_downstream_tail_annotation_length ?? 0
+                }
+                annotationLengthLabel="Downstream Annotation Length"
+                dispatch={dispatch}
+                field="end_tail"
+                hasCustomField="has_custom_downstream_tail_annotation_length"
+                inputLabel={`Nucleotide Downstream Tail (${downstreamTailRegionCount} region${downstreamTailRegionCount === 1 ? "" : "s"})`}
+                lengthField="custom_downstream_tail_annotation_length"
+                region={region}
+                regionIndex={regionIndex}
+              />
+            )}
           </div>
         </div>
-      ))}
+
+        <aside
+          className={cn(
+            "rounded-[1.5rem] border border-[var(--border)] bg-[var(--panel-muted)] p-5",
+            accentClass,
+          )}
+        >
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
+            Chain Wiring
+          </p>
+          <div className="mt-4 flex items-start gap-4">
+            <div className="flex min-h-16 w-12 items-center justify-center text-4xl text-[var(--accent)]">
+              {renderChainGlyph(region.predecessor, successorPresent)}
+            </div>
+            <div className="space-y-3 text-sm">
+              <p className="font-semibold text-[var(--foreground)]">
+                {describeChainPlacement(region.predecessor, successorPresent)}
+              </p>
+              <p className="text-[var(--muted-foreground)]">
+                {region.predecessor
+                  ? `This region is linked after ${region.predecessor}.`
+                  : "This region is a chain head and controls upstream-tail and reverse-complement settings."}
+              </p>
+              <p className="text-[var(--muted-foreground)]">
+                {successorPresent
+                  ? "Another region follows this one, so downstream-tail editing is inherited further down the chain."
+                  : "No successor is attached, so this region owns the downstream tail."}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-6 rounded-[1.2rem] border border-[var(--border)] bg-white p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
+              Reverse Complement
+            </p>
+            {region.predecessor ? (
+              <p className="mt-2 text-sm text-[var(--muted-foreground)]">
+                Inherited from the chain head. Rewire the chain head to change
+                this.
+              </p>
+            ) : (
+              <Toggle
+                checked={Boolean(region.reverse_complement)}
+                label="Apply to this full chain"
+                onChange={(checked) =>
+                  dispatch({
+                    type: "updateRegion",
+                    index: regionIndex,
+                    field: "reverse_complement",
+                    value: checked,
+                  })
+                }
+              />
+            )}
+          </div>
+        </aside>
+      </div>
+    </article>
+  );
+}
+
+function TailEditor({
+  annotationEnabled,
+  annotationLength,
+  annotationLengthLabel,
+  dispatch,
+  field,
+  hasCustomField,
+  inputLabel,
+  lengthField,
+  region,
+  regionIndex,
+}: {
+  annotationEnabled: boolean;
+  annotationLength: number;
+  annotationLengthLabel: string;
+  dispatch: Dispatch<InputTagAction | { type: "bootstrap"; value: InputTag }>;
+  field: "start_tail" | "end_tail";
+  hasCustomField:
+    | "has_custom_upstream_tail_annotation_length"
+    | "has_custom_downstream_tail_annotation_length";
+  inputLabel: string;
+  lengthField:
+    | "custom_upstream_tail_annotation_length"
+    | "custom_downstream_tail_annotation_length";
+  region: RegionSpec;
+  regionIndex: number;
+}) {
+  const currentTail = region[field] ?? "";
+  const lengthError =
+    annotationEnabled && annotationLength > currentTail.length;
+
+  return (
+    <div className="rounded-[1.3rem] border border-[var(--border)] bg-[var(--panel-muted)] p-4">
+      <LabeledInput
+        label={inputLabel}
+        value={currentTail}
+        onChange={(value) =>
+          dispatch({
+            type: "updateRegion",
+            index: regionIndex,
+            field,
+            value,
+          })
+        }
+      />
+      <div className="mt-4 space-y-3">
+        <Toggle
+          checked={annotationEnabled}
+          label="Custom annotation length"
+          onChange={(checked) =>
+            dispatch({
+              type: "updateRegion",
+              index: regionIndex,
+              field: hasCustomField,
+              value: checked,
+            })
+          }
+        />
+        {annotationEnabled ? (
+          <LabeledInput
+            className={lengthError ? "border-[var(--danger)]" : undefined}
+            label={annotationLengthLabel}
+            type="number"
+            value={`${annotationLength}`}
+            onChange={(value) =>
+              dispatch({
+                type: "updateRegion",
+                index: regionIndex,
+                field: lengthField,
+                value: Number(value),
+              })
+            }
+          />
+        ) : null}
+        {lengthError ? (
+          <p className="text-sm text-[var(--danger-strong)]">
+            Annotation length cannot exceed the tail length.
+          </p>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function InheritedTailNotice({
+  label,
+  message,
+}: {
+  label: string;
+  message: string;
+}) {
+  return (
+    <div className="rounded-[1.3rem] border border-[var(--border)] bg-[var(--panel-muted)] p-4">
+      <p className="text-sm font-semibold text-[var(--foreground)]">{label}</p>
+      <p className="mt-2 text-sm text-[var(--muted-foreground)]">{message}</p>
     </div>
   );
 }
@@ -481,6 +885,11 @@ function DesignsPanel({
   inputTag: InputTag;
   dispatch: Dispatch<InputTagAction | { type: "bootstrap"; value: InputTag }>;
 }) {
+  const orderedRegions = useMemo(
+    () => sortRegionsByPredecessor(inputTag.regions),
+    [inputTag.regions],
+  );
+
   return (
     <div className="mt-6 space-y-5">
       <LabeledInput
@@ -530,7 +939,7 @@ function DesignsPanel({
             </div>
           </div>
           <div className="mt-5 grid gap-4 lg:grid-cols-2">
-            {inputTag.regions.map((region) => (
+            {orderedRegions.map((region) => (
               <label
                 key={`${design.id}-${region.name}`}
                 className="space-y-2 text-sm font-medium"
@@ -570,11 +979,15 @@ function DesignsPanel({
 }
 
 function LabeledInput({
+  className,
+  disabled,
   label,
   value,
   onChange,
   type = "text",
 }: {
+  className?: string;
+  disabled?: boolean;
   label: string;
   value: string;
   onChange: (value: string) => void;
@@ -584,6 +997,8 @@ function LabeledInput({
     <label className="space-y-2 text-sm font-medium">
       <span className="text-[var(--muted-foreground)]">{label}</span>
       <Input
+        className={className}
+        disabled={disabled}
         type={type}
         value={value}
         onChange={(event) => onChange(event.target.value)}
@@ -611,4 +1026,61 @@ function Toggle({
       {label}
     </label>
   );
+}
+
+function RegionModeChip({
+  checked,
+  label,
+  onChange,
+}: {
+  checked: boolean;
+  label: string;
+  onChange: () => void;
+}) {
+  return (
+    <button
+      className={cn(
+        "rounded-full border px-4 py-2 text-sm font-semibold transition",
+        checked
+          ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--foreground)]"
+          : "border-[var(--border)] bg-white text-[var(--muted-foreground)] hover:border-[var(--accent)] hover:text-[var(--foreground)]",
+      )}
+      onClick={onChange}
+      type="button"
+    >
+      {label}
+    </button>
+  );
+}
+
+function renderChainGlyph(
+  predecessor: string | null | undefined,
+  successorPresent: boolean,
+) {
+  if (!predecessor && successorPresent) {
+    return "↳";
+  }
+  if (predecessor && successorPresent) {
+    return "⋮";
+  }
+  if (predecessor) {
+    return "↘";
+  }
+  return "→";
+}
+
+function describeChainPlacement(
+  predecessor: string | null | undefined,
+  successorPresent: boolean,
+) {
+  if (!predecessor && successorPresent) {
+    return "Chain head";
+  }
+  if (predecessor && successorPresent) {
+    return "Middle region";
+  }
+  if (predecessor) {
+    return "Chain tail";
+  }
+  return "Standalone region";
 }

@@ -3,6 +3,7 @@ import {
   type DesignSpec,
   type InputTag,
 } from "@/lib/api/short-types";
+import { validateRegionChains } from "@/lib/aa-to-nt/region-chains";
 
 export function validateInputTagState(inputTag: InputTag): InputTag {
   const parsed = zInputTag.parse(inputTag);
@@ -24,6 +25,7 @@ export function validateInputTagState(inputTag: InputTag): InputTag {
       throw new Error(`Unknown predecessor: ${region.predecessor}`);
     }
   }
+  validateRegionChains(parsed.regions);
 
   if (parsed.designs.length === 0) {
     throw new Error("At least one design is required.");

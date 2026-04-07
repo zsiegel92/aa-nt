@@ -213,6 +213,11 @@ export type InputTagAction =
       field: keyof RegionSpec;
       value: RegionSpec[keyof RegionSpec];
     }
+  | {
+      type: "setRegionPredecessor";
+      index: number;
+      predecessor: string | null;
+    }
   | { type: "duplicateRegion"; index: number }
   | { type: "deleteRegion"; index: number }
   | {
@@ -354,6 +359,47 @@ export function inputTagReducer(
         ...state,
         regions: nextRegions,
         designs: nextDesigns,
+      };
+    }
+    case "setRegionPredecessor": {
+      const currentRegion = state.regions[action.index];
+      if (!currentRegion) {
+        return state;
+      }
+      let nextRegions = state.regions.map((region, index) =>
+        index === action.index
+          ? {
+              ...region,
+              predecessor: action.predecessor,
+            }
+          : region,
+      );
+
+      if (action.predecessor) {
+        const predecessorRegion = nextRegions.find(
+          (region) => region.name === action.predecessor,
+        );
+        if (predecessorRegion) {
+          const connectedNames = getConnectedRegionNames(
+            nextRegions,
+            predecessorRegion.name,
+          );
+          nextRegions = nextRegions.map((region) =>
+            connectedNames.has(region.name)
+              ? {
+                  ...region,
+                  reverse_complement: Boolean(
+                    predecessorRegion.reverse_complement,
+                  ),
+                }
+              : region,
+          );
+        }
+      }
+
+      return {
+        ...state,
+        regions: nextRegions,
       };
     }
     case "duplicateRegion": {
