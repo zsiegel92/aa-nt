@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { fetchDefaults } from "@/lib/api/server-client";
-import { getAuthenticatedUserFromRequest } from "@/lib/auth/server";
+import { getAuthenticatedUserFromRequest } from "@/lib/auth/request";
 
 export async function GET(request: NextRequest) {
   const user = getAuthenticatedUserFromRequest(request);

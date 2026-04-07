@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { getAuthenticatedUserFromRequest } from "@/lib/auth/server";
+import { getAuthenticatedUserFromRequest } from "@/lib/auth/request";
 
 export async function proxy(request: NextRequest) {
   const user = getAuthenticatedUserFromRequest(request);

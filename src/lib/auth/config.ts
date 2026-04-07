@@ -1,5 +1,3 @@
-import "server-only";
-
 import { createHash } from "crypto";
 
 export type AllowedUser = {

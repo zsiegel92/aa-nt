@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { zTransformWorkbookRequest } from "@/lib/api/short-types";
 import { proxyTransformWorkbook } from "@/lib/api/server-client";
-import { getAuthenticatedUserFromRequest } from "@/lib/auth/server";
+import { getAuthenticatedUserFromRequest } from "@/lib/auth/request";
 
 export async function POST(request: NextRequest) {
   const user = getAuthenticatedUserFromRequest(request);

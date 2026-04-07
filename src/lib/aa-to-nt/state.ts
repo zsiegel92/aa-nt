@@ -271,13 +271,17 @@ export function inputTagReducer(state: InputTag, action: InputTagAction): InputT
       if (!removed || nextCodonMaps.length === 0) {
         return state;
       }
+      const replacementCodonMap = nextCodonMaps[0];
+      if (!replacementCodonMap) {
+        return state;
+      }
       return {
         ...state,
         codon_maps: nextCodonMaps,
         designs: removeCodonMapAcrossDesigns(
           state.designs,
           removed.name,
-          nextCodonMaps[0].name
+          replacementCodonMap.name
         ),
       };
     }

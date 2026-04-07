@@ -7,7 +7,9 @@ import { Download, LoaderCircle, Sparkles } from "lucide-react";
 import {
   type Dispatch,
   useEffect,
+  useMemo,
   useReducer,
+  useRef,
   useState,
 } from "react";
 import { useSearchParams } from "next/navigation";
@@ -57,38 +59,45 @@ export function AaToNtWorkbench() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [isBootstrapped, setIsBootstrapped] = useState(false);
+  const didBootstrapRef = useRef(false);
+  const inputTagValue = searchParams.get("inputTag");
+
+  const bootstrapResult = useMemo(() => {
+    if (!defaultsQuery.data) {
+      return null;
+    }
+    if (!inputTagValue) {
+      return { value: defaultsQuery.data, loadedFromShareUrl: false, error: null };
+    }
+    try {
+      return {
+        value: validateInputTagState(decodeInputTagFromUrlValue(inputTagValue)),
+        loadedFromShareUrl: true,
+        error: null,
+      };
+    } catch (caughtError) {
+      return {
+        value: defaultsQuery.data,
+        loadedFromShareUrl: false,
+        error:
+          caughtError instanceof Error
+            ? caughtError.message
+            : "Could not decode the shared URL.",
+      };
+    }
+  }, [defaultsQuery.data, inputTagValue]);
 
   const transformMutation = useMutation(
     transformWorkbookEndpointTransformWorkbookPostMutation()
   );
 
   useEffect(() => {
-    if (!defaultsQuery.data || isBootstrapped) {
+    if (!bootstrapResult || didBootstrapRef.current) {
       return;
     }
-    const inputTagValue = searchParams.get("inputTag");
-    if (inputTagValue) {
-      try {
-        dispatch({
-          type: "bootstrap",
-          value: validateInputTagState(decodeInputTagFromUrlValue(inputTagValue)),
-        });
-        setMessage("Loaded configuration from the share URL.");
-        setError(null);
-      } catch (caughtError) {
-        dispatch({ type: "bootstrap", value: defaultsQuery.data });
-        setError(
-          caughtError instanceof Error
-            ? caughtError.message
-            : "Could not decode the shared URL."
-        );
-      }
-    } else {
-      dispatch({ type: "bootstrap", value: defaultsQuery.data });
-    }
-    setIsBootstrapped(true);
-  }, [defaultsQuery.data, isBootstrapped, searchParams]);
+    dispatch({ type: "bootstrap", value: bootstrapResult.value });
+    didBootstrapRef.current = true;
+  }, [bootstrapResult]);
 
   if (defaultsQuery.isLoading || !inputTag) {
     return (
@@ -186,9 +195,19 @@ export function AaToNtWorkbench() {
                 {message}
               </p>
             ) : null}
+            {bootstrapResult?.loadedFromShareUrl ? (
+              <p className="rounded-2xl border border-[var(--accent)]/30 bg-[var(--accent-soft)] px-4 py-3 text-sm text-[var(--foreground)]">
+                Loaded configuration from the share URL.
+              </p>
+            ) : null}
             {error ? (
               <p className="rounded-2xl border border-[var(--danger)]/30 bg-[var(--danger-soft)] px-4 py-3 text-sm text-[var(--danger-strong)]">
                 {error}
+              </p>
+            ) : null}
+            {!error && bootstrapResult?.error ? (
+              <p className="rounded-2xl border border-[var(--danger)]/30 bg-[var(--danger-soft)] px-4 py-3 text-sm text-[var(--danger-strong)]">
+                {bootstrapResult.error}
               </p>
             ) : null}
           </div>
@@ -513,7 +532,7 @@ function DesignsPanel({
     <div className="mt-6 space-y-5">
       <LabeledInput
         label="Selective Design Column Name"
-        value={inputTag.design_column_name}
+        value={inputTag.design_column_name ?? ""}
         onChange={(value) =>
           dispatch({ type: "setDesignColumnName", value })
         }

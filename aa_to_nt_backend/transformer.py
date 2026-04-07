@@ -26,7 +26,9 @@ class RegionRuntime:
         wild_type = self.spec.wild_type
         if not wild_type:
             return ()
-        return tuple(wild_type[index : index + 3] for index in range(0, len(wild_type), 3))
+        return tuple(
+            wild_type[index : index + 3] for index in range(0, len(wild_type), 3)
+        )
 
 
 @dataclass(frozen=True)
@@ -36,8 +38,12 @@ class RegionDesignRuntime:
 
     def transform_series(self, data_frame: pd.DataFrame) -> pd.Series:
         if self.region.spec.constant_nt:
-            return pd.Series([self.region.spec.wild_type] * len(data_frame), index=data_frame.index)
-        amino_acid_values = [str(value) for value in data_frame[self.region.spec.name].tolist()]
+            return pd.Series(
+                [self.region.spec.wild_type] * len(data_frame), index=data_frame.index
+            )
+        amino_acid_values = [
+            str(value) for value in data_frame[self.region.spec.name].tolist()
+        ]
         return pd.Series(
             [self.transform_amino_acids(value) for value in amino_acid_values],
             index=data_frame.index,
@@ -51,7 +57,9 @@ class RegionDesignRuntime:
             wild_type_amino_acids=self.region.wild_type_amino_acids,
         )
         nucleotide_sequence = concatenate(nucleotides)
-        longest_length, _longest_run, longest_index = get_longest_run(nucleotide_sequence)
+        longest_length, _longest_run, longest_index = get_longest_run(
+            nucleotide_sequence
+        )
         fix_iteration = 0
         while longest_length >= 6 and fix_iteration < 7:
             fix_repeat_nucleotides(
@@ -63,7 +71,9 @@ class RegionDesignRuntime:
                 longest_length=longest_length,
             )
             nucleotide_sequence = concatenate(nucleotides)
-            longest_length, _longest_run, longest_index = get_longest_run(nucleotide_sequence)
+            longest_length, _longest_run, longest_index = get_longest_run(
+                nucleotide_sequence
+            )
             fix_iteration += 1
         if self.region.spec.reverse_complement:
             return get_reverse_complement(nucleotide_sequence)
@@ -96,22 +106,33 @@ class DesignRuntime:
             end_region = super_region_design[-1].region.spec
             super_region_name = build_super_region_name(super_region_design)
             output_column = f"v{self.spec.version}--{super_region_name}"
-            annotation_column = f"v{self.spec.version}--{build_super_region_name(super_region_design, annotation=True)}"
+            annotation_super_region_name = build_super_region_name(
+                super_region_design,
+                annotation=True,
+            )
+            annotation_column = f"v{self.spec.version}--{annotation_super_region_name}"
             output_frame[output_column] = start_region.start_tail
             annotation_frame[annotation_column] = start_region.start_tail[
-                len(start_region.start_tail) - start_region.custom_upstream_tail_annotation_length :
+                len(start_region.start_tail)
+                - start_region.custom_upstream_tail_annotation_length :
             ]
 
             for region_design in super_region_design:
                 transformed = region_design.transform_series(data_frame)
                 basic_frame[f"{region_design.region.spec.name}_nts"] = transformed
                 output_frame[output_column] = output_frame[output_column] + transformed
-                annotation_frame[annotation_column] = annotation_frame[annotation_column] + transformed
+                annotation_frame[annotation_column] = (
+                    annotation_frame[annotation_column] + transformed
+                )
 
-            output_frame[output_column] = output_frame[output_column] + end_region.end_tail
+            output_frame[output_column] = (
+                output_frame[output_column] + end_region.end_tail
+            )
             annotation_frame[annotation_column] = (
                 annotation_frame[annotation_column]
-                + end_region.end_tail[: end_region.custom_downstream_tail_annotation_length]
+                + end_region.end_tail[
+                    : end_region.custom_downstream_tail_annotation_length
+                ]
             )
 
             if start_region.reverse_complement:
@@ -131,13 +152,17 @@ def build_super_region_name(
     *,
     annotation: bool = False,
 ) -> str:
-    base_name = "--".join(region_design.region.spec.name for region_design in super_region_design)
+    base_name = "--".join(
+        region_design.region.spec.name for region_design in super_region_design
+    )
     if super_region_design[0].region.spec.reverse_complement and not annotation:
         return f"{base_name}_reverseComplement"
     return base_name
 
 
-def build_super_regions(regions: tuple[RegionRuntime, ...]) -> tuple[tuple[RegionRuntime, ...], ...]:
+def build_super_regions(
+    regions: tuple[RegionRuntime, ...],
+) -> tuple[tuple[RegionRuntime, ...], ...]:
     super_regions = [[region] for region in regions if region.spec.predecessor is None]
     successors = [region for region in regions if region.spec.predecessor is not None]
     while successors:
@@ -152,18 +177,24 @@ def build_super_regions(regions: tuple[RegionRuntime, ...]) -> tuple[tuple[Regio
             if found_successor:
                 break
         if not found_successor:
-            raise ValueError("Regions contain a predecessor cycle or disjoint predecessor reference")
+            raise ValueError(
+                "Regions contain a predecessor cycle or disjoint predecessor reference"
+            )
     return tuple(tuple(group) for group in super_regions)
 
 
 def build_design_runtime(
     input_tag: InputTag,
 ) -> tuple[tuple[DesignRuntime, ...], tuple[RegionRuntime, ...]]:
-    codon_maps_by_name = {codon_map.name: codon_map for codon_map in input_tag.codon_maps}
+    codon_maps_by_name = {
+        codon_map.name: codon_map for codon_map in input_tag.codon_maps
+    }
     regions = tuple(
         RegionRuntime(
             spec=region,
-            wild_type_amino_acids=translate_wild_type_to_amino_acids(region.wild_type, region.length)
+            wild_type_amino_acids=translate_wild_type_to_amino_acids(
+                region.wild_type, region.length
+            )
             if region.wild_type
             else None,
         )
@@ -183,7 +214,11 @@ def build_design_runtime(
         )
         super_region_designs = tuple(
             tuple(
-                next(region_design for region_design in region_designs if region_design.region == region)
+                next(
+                    region_design
+                    for region_design in region_designs
+                    if region_design.region == region
+                )
                 for region in super_region
             )
             for super_region in super_regions
@@ -212,9 +247,12 @@ def transform_input_dataframe(
         design_input_frame = data_frame.copy()
         if input_tag.design_column_name:
             design_input_frame = design_input_frame.loc[
-                design_input_frame[input_tag.design_column_name] == design_runtime.spec.id
+                design_input_frame[input_tag.design_column_name]
+                == design_runtime.spec.id
             ].copy()
-        output_frame, basic_frame, annotation_frame = design_runtime.transform(design_input_frame)
+        output_frame, basic_frame, annotation_frame = design_runtime.transform(
+            design_input_frame
+        )
         output_sheets[design_runtime.output_sheet_name()] = output_frame
         annotation_sheets[design_runtime.output_sheet_name()] = annotation_frame
         basic_frames.append(basic_frame)
@@ -222,7 +260,11 @@ def transform_input_dataframe(
     wide_frame = pd.concat(output_sheets.values(), ignore_index=True)
     wide_annotation_frame = pd.concat(annotation_sheets.values(), ignore_index=True)
 
-    id_vars = [column for column in wide_frame.columns if column in input_columns + ["outputDesignID"]]
+    id_vars = [
+        column
+        for column in wide_frame.columns
+        if column in [*input_columns, "outputDesignID"]
+    ]
     value_vars = [column for column in wide_frame.columns if column not in id_vars]
     tall_frame = wide_frame.melt(
         id_vars=id_vars,
@@ -230,18 +272,26 @@ def transform_input_dataframe(
         var_name="version--region",
         value_name="output_sequence",
     )
-    version_region_values = [str(value) for value in tall_frame["version--region"].tolist()]
-    tall_frame["output_version"] = [value.split("--", 1)[0] for value in version_region_values]
-    tall_frame["output_region"] = [value.split("--", 1)[1] for value in version_region_values]
+    version_region_values = [
+        str(value) for value in tall_frame["version--region"].tolist()
+    ]
+    tall_frame["output_version"] = [
+        value.split("--", 1)[0] for value in version_region_values
+    ]
+    tall_frame["output_region"] = [
+        value.split("--", 1)[1] for value in version_region_values
+    ]
     tall_frame = tall_frame.drop(columns=["version--region"])
 
     id_vars_annotation = [
         column
         for column in wide_annotation_frame.columns
-        if column in input_columns + ["outputDesignID"]
+        if column in [*input_columns, "outputDesignID"]
     ]
     value_vars_annotation = [
-        column for column in wide_annotation_frame.columns if column not in id_vars_annotation
+        column
+        for column in wide_annotation_frame.columns
+        if column not in id_vars_annotation
     ]
 
     tall_region_frame = build_tall_region_frame(wide_frame, id_vars, value_vars)
@@ -256,10 +306,15 @@ def transform_input_dataframe(
     output_sheets["OUTPUT_ALL_region_cols"] = tall_region_frame
     output_sheets["OUTPUT_annotated"] = annotated_region_frame
     output_sheets["OUTPUT_basic_tall"] = pd.concat(basic_frames, ignore_index=True)
-    output_sheets["Input_Regions"] = pd.DataFrame([region.spec.model_dump() for region in regions])
+    output_sheets["Input_Regions"] = pd.DataFrame(
+        [region.spec.model_dump() for region in regions]
+    )
     output_sheets["Input_CodonMaps"] = (
         pd.DataFrame(
-            {codon_map.name: codon_map.model_dump(exclude={"name"}) for codon_map in input_tag.codon_maps}
+            {
+                codon_map.name: codon_map.model_dump(exclude={"name"})
+                for codon_map in input_tag.codon_maps
+            }
         )
         .reset_index()
         .rename(columns={"index": "AA"})
@@ -296,11 +351,15 @@ def build_tall_region_frame(
     }
     stub_names = list({column.split("--", 1)[1] for column in value_vars})
     tall_frame = pd.wide_to_long(
-        wide_frame.rename(columns=renamed_id_vars).rename(columns=version_suffix_columns),
+        wide_frame.rename(columns=renamed_id_vars).rename(
+            columns=version_suffix_columns
+        ),
         stubnames=stub_names,
         i=list(renamed_id_vars.values()),
         j="output_version",
         sep="--v",
     ).reset_index()
-    reverse_id_vars = {renamed: original for original, renamed in renamed_id_vars.items()}
+    reverse_id_vars = {
+        renamed: original for original, renamed in renamed_id_vars.items()
+    }
     return tall_frame.rename(columns=reverse_id_vars).dropna()

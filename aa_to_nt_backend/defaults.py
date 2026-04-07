@@ -5,7 +5,9 @@ from aa_to_nt_backend.models import CodonMapSpec, DesignSpec, InputTag, RegionSp
 
 
 def build_default_input_tag() -> InputTag:
-    codon_maps = tuple(CodonMapSpec.model_validate(value) for value in DEFAULT_CODON_MAPS)
+    codon_maps = tuple(
+        CodonMapSpec.model_validate(value) for value in DEFAULT_CODON_MAPS
+    )
     regions = tuple(RegionSpec.model_validate(value) for value in DEFAULT_REGIONS)
     default_design = DesignSpec(
         id="ID1",

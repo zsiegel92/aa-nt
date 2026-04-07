@@ -103,10 +103,18 @@ class RegionSpec(BaseModel):
     @model_validator(mode="after")
     def validate_lengths(self) -> Self:
         if self.constant_nt and len(self.wild_type) % 3 != 0:
-            raise ValueError("constant_nt regions require wild_type length divisible by 3")
+            raise ValueError(
+                "constant_nt regions require wild_type length divisible by 3"
+            )
         if self.constant_nt and len(self.wild_type) // 3 != self.length:
-            raise ValueError("constant_nt region length must match wild_type codon count")
-        if self.substitution and self.wild_type and len(self.wild_type) != self.length * 3:
+            raise ValueError(
+                "constant_nt region length must match wild_type codon count"
+            )
+        if (
+            self.substitution
+            and self.wild_type
+            and len(self.wild_type) != self.length * 3
+        ):
             raise ValueError("substitution wild_type length must equal length * 3")
         return self
 
@@ -150,7 +158,9 @@ class InputTag(BaseModel):
         for design in self.designs:
             if set(design.region_designs) != region_name_set:
                 raise ValueError("Each design must map every region exactly once")
-            unknown_codon_maps = set(design.region_designs.values()) - codon_map_name_set
+            unknown_codon_maps = (
+                set(design.region_designs.values()) - codon_map_name_set
+            )
             if unknown_codon_maps:
                 raise ValueError(
                     f"Design {design.id!r} references unknown codon maps: "

@@ -7,7 +7,6 @@ import pandas as pd
 
 from aa_to_nt_backend.models import TransformWorkbookRequest
 
-
 EXCEL_MEDIA_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
 
@@ -41,5 +40,7 @@ def write_workbook_bytes(worksheets: dict[str, pd.DataFrame]) -> bytes:
         engine_kwargs={"options": {"strings_to_urls": False}},
     ) as writer:
         for worksheet_name, worksheet_frame in worksheets.items():
-            worksheet_frame.to_excel(writer, sheet_name=worksheet_name[:31], index=False)
+            worksheet_frame.to_excel(
+                writer, sheet_name=worksheet_name[:31], index=False
+            )
     return workbook_bytes.getvalue()

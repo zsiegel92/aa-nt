@@ -2,22 +2,15 @@ import "server-only";
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { type NextRequest } from "next/server";
 
 import {
   SESSION_COOKIE_NAME,
   SESSION_MAX_AGE_SECONDS,
 } from "@/lib/auth/config";
 import {
-  type AuthenticatedUser,
   readSessionCookieValue,
+  type AuthenticatedUser,
 } from "@/lib/auth/session";
-
-export function getAuthenticatedUserFromRequest(
-  request: NextRequest
-): AuthenticatedUser | null {
-  return readSessionCookieValue(request.cookies.get(SESSION_COOKIE_NAME)?.value);
-}
 
 export async function getAuthenticatedUser(): Promise<AuthenticatedUser | null> {
   const cookieStore = await cookies();
