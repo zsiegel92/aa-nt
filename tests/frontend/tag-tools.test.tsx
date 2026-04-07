@@ -66,9 +66,9 @@ describe("TagTools", () => {
 
     render(<TagTools inputTag={inputTag} onApplyInputTag={onApplyInputTag} />);
 
-    expect(screen.getAllByPlaceholderText("Nothing generated yet.")).toHaveLength(
-      2
-    );
+    expect(
+      screen.getAllByPlaceholderText("Nothing generated yet."),
+    ).toHaveLength(2);
 
     fireEvent.click(screen.getByRole("button", { name: /generate json/i }));
 
@@ -89,7 +89,9 @@ describe("TagTools", () => {
     }
     fireEvent.click(pasteJsonButton);
 
-    expect(screen.getByPlaceholderText('{"codon_maps":[...]}')).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText('{"codon_maps":[...]}'),
+    ).toBeInTheDocument();
     expect(onApplyInputTag).not.toHaveBeenCalled();
   });
 });

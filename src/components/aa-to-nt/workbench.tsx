@@ -18,11 +18,7 @@ import {
   defaultsDefaultsGetOptions,
   transformWorkbookEndpointTransformWorkbookPostMutation,
 } from "@/api/client/@tanstack/react-query.gen";
-import type {
-  CodonMapSpec,
-  InputTag,
-  RegionSpec,
-} from "@/api/client";
+import type { CodonMapSpec, InputTag, RegionSpec } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { downloadBase64File, fileToBase64 } from "@/lib/aa-to-nt/file";
@@ -42,7 +38,10 @@ export function AaToNtWorkbench() {
   const searchParams = useSearchParams();
   const defaultsQuery = useQuery(defaultsDefaultsGetOptions());
   const [inputTag, dispatch] = useReducer(
-    (state: InputTag | null, action: InputTagAction | { type: "bootstrap"; value: InputTag }) => {
+    (
+      state: InputTag | null,
+      action: InputTagAction | { type: "bootstrap"; value: InputTag },
+    ) => {
       if (action.type === "bootstrap") {
         return action.value;
       }
@@ -51,10 +50,10 @@ export function AaToNtWorkbench() {
       }
       return inputTagReducer(state, action);
     },
-    null
+    null,
   );
   const [activeTab, setActiveTab] = useState<"codon" | "regions" | "designs">(
-    "codon"
+    "codon",
   );
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -67,7 +66,11 @@ export function AaToNtWorkbench() {
       return null;
     }
     if (!inputTagValue) {
-      return { value: defaultsQuery.data, loadedFromShareUrl: false, error: null };
+      return {
+        value: defaultsQuery.data,
+        loadedFromShareUrl: false,
+        error: null,
+      };
     }
     try {
       return {
@@ -88,7 +91,7 @@ export function AaToNtWorkbench() {
   }, [defaultsQuery.data, inputTagValue]);
 
   const transformMutation = useMutation(
-    transformWorkbookEndpointTransformWorkbookPostMutation()
+    transformWorkbookEndpointTransformWorkbookPostMutation(),
   );
 
   useEffect(() => {
@@ -123,14 +126,14 @@ export function AaToNtWorkbench() {
         input_tag: validatedInputTag,
         input_share_url: buildShareUrl(
           `${window.location.origin}/aa-to-nt`,
-          validatedInputTag
+          validatedInputTag,
         ),
       };
       const response = await transformMutation.mutateAsync({ body });
       downloadBase64File(
         response.output_file_base64,
         response.output_file_name,
-        response.output_file_media_type
+        response.output_file_media_type,
       );
       setMessage("Workbook generated successfully.");
       setError(null);
@@ -138,7 +141,7 @@ export function AaToNtWorkbench() {
       setError(
         caughtError instanceof Error
           ? caughtError.message
-          : "The workbook request failed."
+          : "The workbook request failed.",
       );
     }
   };
@@ -286,7 +289,7 @@ function CodonMapsPanel({
   dispatch: Dispatch<InputTagAction | { type: "bootstrap"; value: InputTag }>;
 }) {
   const aminoAcids = Object.keys(inputTag.codon_maps[0] ?? {}).filter(
-    (field): field is keyof CodonMapSpec => field !== "name"
+    (field): field is keyof CodonMapSpec => field !== "name",
   );
 
   return (
@@ -313,14 +316,18 @@ function CodonMapsPanel({
                     <Button
                       size="sm"
                       variant="secondary"
-                      onClick={() => dispatch({ type: "duplicateCodonMap", index })}
+                      onClick={() =>
+                        dispatch({ type: "duplicateCodonMap", index })
+                      }
                     >
                       Duplicate
                     </Button>
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => dispatch({ type: "deleteCodonMap", index })}
+                      onClick={() =>
+                        dispatch({ type: "deleteCodonMap", index })
+                      }
                     >
                       Delete
                     </Button>
@@ -399,7 +406,9 @@ function RegionsPanel({
               }
             />
             <label className="space-y-2 text-sm font-medium">
-              <span className="text-[var(--muted-foreground)]">Predecessor</span>
+              <span className="text-[var(--muted-foreground)]">
+                Predecessor
+              </span>
               <select
                 className="h-11 w-full rounded-2xl border border-[var(--border)] bg-white px-4 text-sm outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)]"
                 value={region.predecessor ?? ""}
@@ -533,9 +542,7 @@ function DesignsPanel({
       <LabeledInput
         label="Selective Design Column Name"
         value={inputTag.design_column_name ?? ""}
-        onChange={(value) =>
-          dispatch({ type: "setDesignColumnName", value })
-        }
+        onChange={(value) => dispatch({ type: "setDesignColumnName", value })}
       />
       {inputTag.designs.map((design, designIndex) => (
         <div
@@ -561,14 +568,18 @@ function DesignsPanel({
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={() => dispatch({ type: "duplicateDesign", index: designIndex })}
+                onClick={() =>
+                  dispatch({ type: "duplicateDesign", index: designIndex })
+                }
               >
                 Duplicate
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => dispatch({ type: "deleteDesign", index: designIndex })}
+                onClick={() =>
+                  dispatch({ type: "deleteDesign", index: designIndex })
+                }
               >
                 Delete
               </Button>
@@ -576,8 +587,13 @@ function DesignsPanel({
           </div>
           <div className="mt-5 grid gap-4 lg:grid-cols-2">
             {inputTag.regions.map((region) => (
-              <label key={`${design.id}-${region.name}`} className="space-y-2 text-sm font-medium">
-                <span className="text-[var(--muted-foreground)]">{region.name}</span>
+              <label
+                key={`${design.id}-${region.name}`}
+                className="space-y-2 text-sm font-medium"
+              >
+                <span className="text-[var(--muted-foreground)]">
+                  {region.name}
+                </span>
                 <select
                   className="h-11 w-full rounded-2xl border border-[var(--border)] bg-white px-4 text-sm outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)]"
                   value={design.region_designs[region.name] ?? ""}
@@ -623,7 +639,11 @@ function LabeledInput({
   return (
     <label className="space-y-2 text-sm font-medium">
       <span className="text-[var(--muted-foreground)]">{label}</span>
-      <Input type={type} value={value} onChange={(event) => onChange(event.target.value)} />
+      <Input
+        type={type}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      />
     </label>
   );
 }

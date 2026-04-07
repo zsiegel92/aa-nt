@@ -10,7 +10,9 @@ wheels/
 .venv
 .env
 scratch/
+.pytest_cache/
 node_modules/
 .next/
 coverage/
+tsconfig.tsbuildinfo
 PLAN.md

@@ -7,7 +7,9 @@ import {
 } from "@/lib/auth/session";
 
 export function getAuthenticatedUserFromRequest(
-  request: NextRequest
+  request: NextRequest,
 ): AuthenticatedUser | null {
-  return readSessionCookieValue(request.cookies.get(SESSION_COOKIE_NAME)?.value);
+  return readSessionCookieValue(
+    request.cookies.get(SESSION_COOKIE_NAME)?.value,
+  );
 }

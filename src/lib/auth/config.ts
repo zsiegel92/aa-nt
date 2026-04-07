@@ -9,7 +9,7 @@ export const SESSION_COOKIE_NAME =
   process.env.SESSION_COOKIE_NAME ?? "aa_to_nt_session";
 export const SESSION_MAX_AGE_SECONDS = Number.parseInt(
   process.env.SESSION_MAX_AGE_SECONDS ?? `${60 * 60 * 24 * 30}`,
-  10
+  10,
 );
 
 export function getAllowedUsers(): readonly AllowedUser[] {
@@ -30,7 +30,5 @@ export function getSessionSecret(): Buffer {
     .map((user) => `${user.username}\0${user.password}`)
     .sort()
     .join("\n");
-  return createHash("sha256")
-    .update(`${material}\0aa-to-nt-session`)
-    .digest();
+  return createHash("sha256").update(`${material}\0aa-to-nt-session`).digest();
 }

@@ -52,7 +52,10 @@ export function LoginForm() {
       <div className="space-y-4">
         <label className="space-y-2 text-sm font-medium">
           <span className="text-[var(--muted-foreground)]">Username</span>
-          <Input value={username} onChange={(event) => setUsername(event.target.value)} />
+          <Input
+            value={username}
+            onChange={(event) => setUsername(event.target.value)}
+          />
         </label>
         <label className="space-y-2 text-sm font-medium">
           <span className="text-[var(--muted-foreground)]">Password</span>

@@ -39,7 +39,7 @@ export function validateInputTagState(inputTag: InputTag): InputTag {
 function validateDesignMapping(
   design: DesignSpec,
   regionNames: Set<string>,
-  codonMapNames: Set<string>
+  codonMapNames: Set<string>,
 ) {
   const mappedRegionNames = new Set(Object.keys(design.region_designs));
   if (mappedRegionNames.size !== regionNames.size) {
@@ -53,7 +53,7 @@ function validateDesignMapping(
   for (const codonMapName of Object.values(design.region_designs)) {
     if (!codonMapNames.has(codonMapName)) {
       throw new Error(
-        `Design ${design.id} references unknown codon map ${codonMapName}.`
+        `Design ${design.id} references unknown codon map ${codonMapName}.`,
       );
     }
   }

@@ -18,7 +18,7 @@ export async function getAuthenticatedUser(): Promise<AuthenticatedUser | null> 
 }
 
 export async function requireAuthenticatedUser(
-  callbackPath = "/aa-to-nt"
+  callbackPath = "/aa-to-nt",
 ): Promise<AuthenticatedUser> {
   const user = await getAuthenticatedUser();
   if (!user) {

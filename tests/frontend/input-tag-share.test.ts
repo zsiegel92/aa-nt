@@ -81,7 +81,7 @@ describe("input tag sharing", () => {
 
   it("throws on malformed compressed data", () => {
     expect(() => decodeInputTagFromUrlValue("%%%")).toThrow(
-      "Could not decode the shared input tag"
+      "Could not decode the shared input tag",
     );
   });
 });

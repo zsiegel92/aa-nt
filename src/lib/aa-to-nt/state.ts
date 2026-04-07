@@ -1,6 +1,14 @@
-import type { CodonMapSpec, DesignSpec, InputTag, RegionSpec } from "@/api/client";
+import type {
+  CodonMapSpec,
+  DesignSpec,
+  InputTag,
+  RegionSpec,
+} from "@/api/client";
 
-function nextUniqueName(existingNames: readonly string[], baseName: string): string {
+function nextUniqueName(
+  existingNames: readonly string[],
+  baseName: string,
+): string {
   let candidateIndex = 2;
   let candidate = `${baseName}_${candidateIndex}`;
   while (existingNames.includes(candidate)) {
@@ -22,7 +30,7 @@ function syncDesignVersions(designs: readonly DesignSpec[]): DesignSpec[] {
 function syncRegionMapsForNewRegion(
   designs: readonly DesignSpec[],
   regionName: string,
-  fallbackCodonMapName: string
+  fallbackCodonMapName: string,
 ): DesignSpec[] {
   return designs.map((design) => ({
     ...design,
@@ -36,10 +44,11 @@ function syncRegionMapsForNewRegion(
 function renameRegionAcrossDesigns(
   designs: readonly DesignSpec[],
   previousName: string,
-  nextName: string
+  nextName: string,
 ): DesignSpec[] {
   return designs.map((design) => {
-    const { [previousName]: previousCodonMapName, ...rest } = design.region_designs;
+    const { [previousName]: previousCodonMapName, ...rest } =
+      design.region_designs;
     return {
       ...design,
       region_designs: {
@@ -52,7 +61,7 @@ function renameRegionAcrossDesigns(
 
 function removeRegionAcrossDesigns(
   designs: readonly DesignSpec[],
-  regionName: string
+  regionName: string,
 ): DesignSpec[] {
   return designs.map((design) => {
     const { [regionName]: _removed, ...rest } = design.region_designs;
@@ -66,15 +75,17 @@ function removeRegionAcrossDesigns(
 function renameCodonMapAcrossDesigns(
   designs: readonly DesignSpec[],
   previousName: string,
-  nextName: string
+  nextName: string,
 ): DesignSpec[] {
   return designs.map((design) => ({
     ...design,
     region_designs: Object.fromEntries(
-      Object.entries(design.region_designs).map(([regionName, codonMapName]) => [
-        regionName,
-        codonMapName === previousName ? nextName : codonMapName,
-      ])
+      Object.entries(design.region_designs).map(
+        ([regionName, codonMapName]) => [
+          regionName,
+          codonMapName === previousName ? nextName : codonMapName,
+        ],
+      ),
     ),
   }));
 }
@@ -82,22 +93,26 @@ function renameCodonMapAcrossDesigns(
 function removeCodonMapAcrossDesigns(
   designs: readonly DesignSpec[],
   codonMapName: string,
-  replacementCodonMapName: string
+  replacementCodonMapName: string,
 ): DesignSpec[] {
   return designs.map((design) => ({
     ...design,
     region_designs: Object.fromEntries(
-      Object.entries(design.region_designs).map(([regionName, mappedCodonMapName]) => [
-        regionName,
-        mappedCodonMapName === codonMapName ? replacementCodonMapName : mappedCodonMapName,
-      ])
+      Object.entries(design.region_designs).map(
+        ([regionName, mappedCodonMapName]) => [
+          regionName,
+          mappedCodonMapName === codonMapName
+            ? replacementCodonMapName
+            : mappedCodonMapName,
+        ],
+      ),
     ),
   }));
 }
 
 function getConnectedRegionNames(
   regions: readonly RegionSpec[],
-  regionName: string
+  regionName: string,
 ): Set<string> {
   const connectedNames = new Set<string>([regionName]);
   let changed = true;
@@ -127,26 +142,28 @@ function getConnectedRegionNames(
 function updateRegionField(
   region: RegionSpec,
   field: keyof RegionSpec,
-  value: RegionSpec[keyof RegionSpec]
+  value: RegionSpec[keyof RegionSpec],
 ): RegionSpec {
   if (field === "wild_type") {
     const wildType = `${value ?? ""}`;
     return {
       ...region,
       wild_type: wildType,
-      length: region.constant_nt ? Math.floor(wildType.length / 3) : region.length,
+      length: region.constant_nt
+        ? Math.floor(wildType.length / 3)
+        : region.length,
     };
   }
-      if (field === "constant_nt") {
-        const constantNt = Boolean(value);
-        return {
-          ...region,
-          constant_nt: constantNt,
-          length: constantNt
-            ? Math.floor((region.wild_type ?? "").length / 3)
-            : region.length,
-        };
-      }
+  if (field === "constant_nt") {
+    const constantNt = Boolean(value);
+    return {
+      ...region,
+      constant_nt: constantNt,
+      length: constantNt
+        ? Math.floor((region.wild_type ?? "").length / 3)
+        : region.length,
+    };
+  }
   if (field === "length") {
     return {
       ...region,
@@ -213,7 +230,10 @@ export type InputTagAction =
   | { type: "duplicateDesign"; index: number }
   | { type: "deleteDesign"; index: number };
 
-export function inputTagReducer(state: InputTag, action: InputTagAction): InputTag {
+export function inputTagReducer(
+  state: InputTag,
+  action: InputTagAction,
+): InputTag {
   switch (action.type) {
     case "replace":
       return action.value;
@@ -240,7 +260,7 @@ export function inputTagReducer(state: InputTag, action: InputTagAction): InputT
         designs: renameCodonMapAcrossDesigns(
           state.designs,
           previousName,
-          action.value
+          action.value,
         ),
       };
     }
@@ -251,7 +271,7 @@ export function inputTagReducer(state: InputTag, action: InputTagAction): InputT
       }
       const duplicateName = nextUniqueName(
         state.codon_maps.map((codonMap) => codonMap.name),
-        source.name
+        source.name,
       );
       return {
         ...state,
@@ -267,7 +287,9 @@ export function inputTagReducer(state: InputTag, action: InputTagAction): InputT
         return state;
       }
       const removed = state.codon_maps[action.index];
-      const nextCodonMaps = state.codon_maps.filter((_, index) => index !== action.index);
+      const nextCodonMaps = state.codon_maps.filter(
+        (_, index) => index !== action.index,
+      );
       if (!removed || nextCodonMaps.length === 0) {
         return state;
       }
@@ -281,7 +303,7 @@ export function inputTagReducer(state: InputTag, action: InputTagAction): InputT
         designs: removeCodonMapAcrossDesigns(
           state.designs,
           removed.name,
-          replacementCodonMap.name
+          replacementCodonMap.name,
         ),
       };
     }
@@ -293,10 +315,10 @@ export function inputTagReducer(state: InputTag, action: InputTagAction): InputT
       const updatedRegion = updateRegionField(
         currentRegion,
         action.field,
-        action.value
+        action.value,
       );
       let nextRegions = state.regions.map((region, index) =>
-        index === action.index ? updatedRegion : region
+        index === action.index ? updatedRegion : region,
       );
       let nextDesigns = state.designs;
       if (action.field === "name") {
@@ -309,20 +331,23 @@ export function inputTagReducer(state: InputTag, action: InputTagAction): InputT
                   region.predecessor === currentRegion.name
                     ? updatedRegion.name
                     : region.predecessor,
-              }
+              },
         );
         nextDesigns = renameRegionAcrossDesigns(
           state.designs,
           currentRegion.name,
-          updatedRegion.name
+          updatedRegion.name,
         );
       }
       if (action.field === "reverse_complement") {
-        const connectedNames = getConnectedRegionNames(nextRegions, updatedRegion.name);
+        const connectedNames = getConnectedRegionNames(
+          nextRegions,
+          updatedRegion.name,
+        );
         nextRegions = nextRegions.map((region) =>
           connectedNames.has(region.name)
             ? { ...region, reverse_complement: Boolean(action.value) }
-            : region
+            : region,
         );
       }
       return {
@@ -338,7 +363,7 @@ export function inputTagReducer(state: InputTag, action: InputTagAction): InputT
       }
       const duplicateName = nextUniqueName(
         state.regions.map((region) => region.name),
-        source.name
+        source.name,
       );
       const duplicatedRegion: RegionSpec = {
         ...source,
@@ -355,7 +380,7 @@ export function inputTagReducer(state: InputTag, action: InputTagAction): InputT
         designs: syncRegionMapsForNewRegion(
           state.designs,
           duplicateName,
-          state.codon_maps[0]?.name ?? ""
+          state.codon_maps[0]?.name ?? "",
         ),
       };
     }
@@ -383,7 +408,9 @@ export function inputTagReducer(state: InputTag, action: InputTagAction): InputT
     }
     case "updateDesign": {
       const nextDesigns = state.designs.map((design, index) =>
-        index === action.index ? { ...design, [action.field]: action.value } : design
+        index === action.index
+          ? { ...design, [action.field]: action.value }
+          : design,
       );
       return {
         ...state,
@@ -402,7 +429,7 @@ export function inputTagReducer(state: InputTag, action: InputTagAction): InputT
                   [action.regionName]: action.codonMapName,
                 },
               }
-            : design
+            : design,
         ),
       };
     }
@@ -431,7 +458,7 @@ export function inputTagReducer(state: InputTag, action: InputTagAction): InputT
       return {
         ...state,
         designs: syncDesignVersions(
-          state.designs.filter((_, index) => index !== action.index)
+          state.designs.filter((_, index) => index !== action.index),
         ),
       };
     }

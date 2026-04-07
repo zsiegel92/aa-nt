@@ -19,14 +19,14 @@ export async function POST(request: Request) {
   if (!user) {
     return NextResponse.json(
       { error: "Incorrect username or password." },
-      { status: 401 }
+      { status: 401 },
     );
   }
   const response = NextResponse.json({ ok: true });
   response.cookies.set(
     SESSION_COOKIE_NAME,
     createSessionCookieValue(user),
-    sessionCookieOptions
+    sessionCookieOptions,
   );
   return response;
 }

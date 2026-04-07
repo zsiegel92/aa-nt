@@ -57,7 +57,7 @@ export function TagTools({ inputTag, onApplyInputTag }: TagToolsProps) {
                 setError(
                   caughtError instanceof Error
                     ? caughtError.message
-                    : "Could not generate the JSON export."
+                    : "Could not generate the JSON export.",
                 );
               }
             }}
@@ -77,7 +77,7 @@ export function TagTools({ inputTag, onApplyInputTag }: TagToolsProps) {
                 setError(
                   caughtError instanceof Error
                     ? caughtError.message
-                    : "Could not generate the share URL."
+                    : "Could not generate the share URL.",
                 );
               }
             }}
@@ -133,7 +133,9 @@ export function TagTools({ inputTag, onApplyInputTag }: TagToolsProps) {
             <Button
               onClick={() => {
                 try {
-                  const parsed = validateInputTagState(parseInputTagJson(pasteValue));
+                  const parsed = validateInputTagState(
+                    parseInputTagJson(pasteValue),
+                  );
                   onApplyInputTag(parsed);
                   setPasteValue("");
                   setError(null);
@@ -142,7 +144,7 @@ export function TagTools({ inputTag, onApplyInputTag }: TagToolsProps) {
                   setError(
                     caughtError instanceof Error
                       ? caughtError.message
-                      : "Could not parse the pasted JSON."
+                      : "Could not parse the pasted JSON.",
                   );
                 }
               }}

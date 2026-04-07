@@ -11,7 +11,7 @@ export async function fileToBase64(file: File): Promise<string> {
 export function downloadBase64File(
   base64Value: string,
   fileName: string,
-  mediaType: string
+  mediaType: string,
 ) {
   const binary = atob(base64Value);
   const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));

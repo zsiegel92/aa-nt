@@ -23,8 +23,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             Single-team auth
           </p>
           <h1 className="max-w-2xl text-5xl font-semibold leading-tight tracking-tight">
-            Protected Next.js shell, typed FastAPI backend, no exposed AA→NT
-            app bundle before login.
+            Protected Next.js shell, typed FastAPI backend, no exposed AA→NT app
+            bundle before login.
           </h1>
           <p className="max-w-2xl text-lg text-[var(--muted-foreground)]">
             This app uses the minimal signed-cookie pattern you liked in the

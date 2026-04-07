@@ -32,7 +32,7 @@ export async function fetchDefaults(): Promise<InputTag> {
 }
 
 export async function proxyTransformWorkbook(
-  request: TransformWorkbookRequest
+  request: TransformWorkbookRequest,
 ): Promise<TransformWorkbookResponse> {
   const { data } = await transformWorkbookEndpointTransformWorkbookPost({
     client: serverApiClient,

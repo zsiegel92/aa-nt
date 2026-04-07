@@ -20,15 +20,20 @@
 
 html {
   background:
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.7), transparent 38%),
-    radial-gradient(circle at right 15% top 12%, rgba(66, 114, 86, 0.12), transparent 22%),
+    radial-gradient(
+      circle at top left,
+      rgba(255, 255, 255, 0.7),
+      transparent 38%
+    ),
+    radial-gradient(
+      circle at right 15% top 12%,
+      rgba(66, 114, 86, 0.12),
+      transparent 22%
+    ),
     linear-gradient(180deg, #f7f6ef 0%, #ece8db 100%);
   color: var(--foreground);
   font-family:
-    "Iowan Old Style",
-    "Palatino Linotype",
-    "Book Antiqua",
-    "URW Palladio L",
+    "Iowan Old Style", "Palatino Linotype", "Book Antiqua", "URW Palladio L",
     serif;
 }
 

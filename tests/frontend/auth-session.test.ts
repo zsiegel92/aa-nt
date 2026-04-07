@@ -23,7 +23,9 @@ describe("auth session helpers", () => {
 
     expect(user).toEqual({ username: "demo-user" });
     const cookieValue = createSessionCookieValue(user!);
-    expect(readSessionCookieValue(cookieValue)).toEqual({ username: "demo-user" });
+    expect(readSessionCookieValue(cookieValue)).toEqual({
+      username: "demo-user",
+    });
   });
 
   it("rejects expired session cookies", () => {

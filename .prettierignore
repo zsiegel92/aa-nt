@@ -1,5 +1,7 @@
 .next
 .venv
 node_modules
+.pytest_cache
+pnpm-lock.yaml
 src/api/client
 openapi.json

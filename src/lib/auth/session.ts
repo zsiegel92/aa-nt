@@ -27,10 +27,10 @@ function buildSignature(username: string, issuedAt: string): string {
 
 export function validateCredentials(
   username: string,
-  password: string
+  password: string,
 ): AuthenticatedUser | null {
   const matchingUser = getAllowedUsers().find((user) =>
-    secureEqual(user.username, username.trim())
+    secureEqual(user.username, username.trim()),
   );
   if (!matchingUser) {
     return null;
@@ -48,7 +48,7 @@ export function createSessionCookieValue(user: AuthenticatedUser): string {
 }
 
 export function readSessionCookieValue(
-  cookieValue: string | undefined | null
+  cookieValue: string | undefined | null,
 ): AuthenticatedUser | null {
   if (!cookieValue) {
     return null;
@@ -70,7 +70,7 @@ export function readSessionCookieValue(
     return null;
   }
   const userStillAllowed = getAllowedUsers().some((allowedUser) =>
-    secureEqual(allowedUser.username, username)
+    secureEqual(allowedUser.username, username),
   );
   return userStillAllowed ? { username } : null;
 }

@@ -17,7 +17,7 @@ export const DialogOverlay = ({
   <DialogPrimitive.Overlay
     className={cn(
       "fixed inset-0 z-50 bg-[rgba(20,32,24,0.45)] backdrop-blur-[2px]",
-      className
+      className,
     )}
     {...props}
   />
@@ -33,7 +33,7 @@ export const DialogContent = ({
     <DialogPrimitive.Content
       className={cn(
         "fixed left-1/2 top-1/2 z-50 w-[min(92vw,44rem)] -translate-x-1/2 -translate-y-1/2 rounded-[2rem] border border-[var(--border)] bg-[var(--panel)] p-6 shadow-[0_40px_120px_rgba(22,32,18,0.18)]",
-        className
+        className,
       )}
       {...props}
     >
