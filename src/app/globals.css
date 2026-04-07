@@ -43,6 +43,22 @@ body {
   color: var(--foreground);
 }
 
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+select {
+  cursor: pointer;
+}
+
+select:disabled {
+  cursor: not-allowed;
+}
+
 * {
   box-sizing: border-box;
 }

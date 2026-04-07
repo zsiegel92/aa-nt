@@ -235,7 +235,7 @@ function TabButton({
 }) {
   return (
     <button
-      className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+      className={`cursor-pointer rounded-full px-4 py-2 text-sm font-semibold transition ${
         active
           ? "bg-[var(--accent)] text-[var(--accent-foreground)]"
           : "bg-[var(--panel-muted)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
@@ -1017,8 +1017,9 @@ function Toggle({
   onChange: (checked: boolean) => void;
 }) {
   return (
-    <label className="inline-flex items-center gap-3 rounded-full border border-[var(--border)] bg-white px-4 py-2 text-sm font-medium">
+    <label className="inline-flex cursor-pointer items-center gap-3 rounded-full border border-[var(--border)] bg-white px-4 py-2 text-sm font-medium">
       <input
+        className="cursor-pointer"
         type="checkbox"
         checked={checked}
         onChange={(event) => onChange(event.target.checked)}
@@ -1040,7 +1041,7 @@ function RegionModeChip({
   return (
     <button
       className={cn(
-        "rounded-full border px-4 py-2 text-sm font-semibold transition",
+        "cursor-pointer rounded-full border px-4 py-2 text-sm font-semibold transition",
         checked
           ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--foreground)]"
           : "border-[var(--border)] bg-white text-[var(--muted-foreground)] hover:border-[var(--accent)] hover:text-[var(--foreground)]",
