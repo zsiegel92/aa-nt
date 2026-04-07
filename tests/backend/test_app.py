@@ -16,34 +16,27 @@ def build_authorized_client(monkeypatch: MonkeyPatch) -> TestClient:
     return TestClient(webapp)
 
 
-def test_defaults_requires_bearer_token(monkeypatch: MonkeyPatch) -> None:
+def test_healthz_requires_bearer_token(monkeypatch: MonkeyPatch) -> None:
     monkeypatch.setenv("AA_TO_NT_API_KEY", "test-key")
-    monkeypatch.setenv("USERNAME", "user")
-    monkeypatch.setenv("PASSWORD", "secret")
     client = build_authorized_client(monkeypatch)
 
-    response = client.get("/defaults")
+    response = client.get("/healthz")
 
     assert response.status_code == 401
 
 
-def test_defaults_returns_input_tag_when_authorized(monkeypatch: MonkeyPatch) -> None:
+def test_healthz_returns_ok_when_authorized(monkeypatch: MonkeyPatch) -> None:
     monkeypatch.setenv("AA_TO_NT_API_KEY", "test-key")
-    monkeypatch.setenv("USERNAME", "user")
-    monkeypatch.setenv("PASSWORD", "secret")
     client = build_authorized_client(monkeypatch)
 
-    response = client.get("/defaults", headers={"Authorization": "Bearer test-key"})
+    response = client.get("/healthz", headers={"Authorization": "Bearer test-key"})
 
     assert response.status_code == 200
-    payload = response.json()
-    assert payload["designs"][0]["id"] == build_default_input_tag().designs[0].id
+    assert response.json() == {"status": "ok"}
 
 
 def test_transform_workbook_endpoint_round_trip(monkeypatch: MonkeyPatch) -> None:
     monkeypatch.setenv("AA_TO_NT_API_KEY", "test-key")
-    monkeypatch.setenv("USERNAME", "user")
-    monkeypatch.setenv("PASSWORD", "secret")
     client = build_authorized_client(monkeypatch)
 
     payload = {

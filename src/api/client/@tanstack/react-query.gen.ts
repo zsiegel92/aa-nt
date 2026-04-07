@@ -3,8 +3,8 @@
 import { type DefaultError, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { defaultsDefaultsGet, healthzHealthzGet, type Options, transformWorkbookEndpointTransformWorkbookPost } from '../sdk.gen';
-import type { DefaultsDefaultsGetData, DefaultsDefaultsGetResponse, HealthzHealthzGetData, HealthzHealthzGetResponse, TransformWorkbookEndpointTransformWorkbookPostData, TransformWorkbookEndpointTransformWorkbookPostError, TransformWorkbookEndpointTransformWorkbookPostResponse } from '../types.gen';
+import { healthzHealthzGet, type Options, transformWorkbookEndpointTransformWorkbookPost } from '../sdk.gen';
+import type { HealthzHealthzGetData, HealthzHealthzGetResponse, TransformWorkbookEndpointTransformWorkbookPostData, TransformWorkbookEndpointTransformWorkbookPostError, TransformWorkbookEndpointTransformWorkbookPostResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -55,24 +55,6 @@ export const healthzHealthzGetOptions = (options?: Options<HealthzHealthzGetData
         return data;
     },
     queryKey: healthzHealthzGetQueryKey(options)
-});
-
-export const defaultsDefaultsGetQueryKey = (options?: Options<DefaultsDefaultsGetData>) => createQueryKey('defaultsDefaultsGet', options);
-
-/**
- * Defaults
- */
-export const defaultsDefaultsGetOptions = (options?: Options<DefaultsDefaultsGetData>) => queryOptions<DefaultsDefaultsGetResponse, DefaultError, DefaultsDefaultsGetResponse, ReturnType<typeof defaultsDefaultsGetQueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-        const { data } = await defaultsDefaultsGet({
-            ...options,
-            ...queryKey[0],
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: defaultsDefaultsGetQueryKey(options)
 });
 
 /**

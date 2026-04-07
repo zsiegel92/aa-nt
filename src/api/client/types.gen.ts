@@ -293,22 +293,6 @@ export type HealthzHealthzGetResponses = {
 
 export type HealthzHealthzGetResponse = HealthzHealthzGetResponses[keyof HealthzHealthzGetResponses];
 
-export type DefaultsDefaultsGetData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/defaults';
-};
-
-export type DefaultsDefaultsGetResponses = {
-    /**
-     * Successful Response
-     */
-    200: InputTag;
-};
-
-export type DefaultsDefaultsGetResponse = DefaultsDefaultsGetResponses[keyof DefaultsDefaultsGetResponses];
-
 export type TransformWorkbookEndpointTransformWorkbookPostData = {
     body: TransformWorkbookRequest;
     path?: never;

@@ -2,22 +2,11 @@
 
 import "@/lib/api/browser-client";
 
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { Download, LoaderCircle, Sparkles } from "lucide-react";
-import {
-  type Dispatch,
-  useEffect,
-  useMemo,
-  useReducer,
-  useRef,
-  useState,
-} from "react";
-import { useSearchParams } from "next/navigation";
+import { type Dispatch, useReducer, useState } from "react";
 
-import {
-  defaultsDefaultsGetOptions,
-  transformWorkbookEndpointTransformWorkbookPostMutation,
-} from "@/api/client/@tanstack/react-query.gen";
+import { transformWorkbookEndpointTransformWorkbookPostMutation } from "@/api/client/@tanstack/react-query.gen";
 import type { CodonMapSpec, InputTag, RegionSpec } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,32 +14,34 @@ import { downloadBase64File, fileToBase64 } from "@/lib/aa-to-nt/file";
 import { inputTagReducer } from "@/lib/aa-to-nt/state";
 import { validateInputTagState } from "@/lib/aa-to-nt/validation";
 import type { TransformWorkbookRequest } from "@/lib/api/short-types";
-import {
-  buildShareUrl,
-  decodeInputTagFromUrlValue,
-} from "@/lib/input-tag/share";
+import { buildShareUrl } from "@/lib/input-tag/share";
 
 import { TagTools } from "./tag-tools";
 
 type InputTagAction = Parameters<typeof inputTagReducer>[1];
 
-export function AaToNtWorkbench() {
-  const searchParams = useSearchParams();
-  const defaultsQuery = useQuery(defaultsDefaultsGetOptions());
+type AaToNtWorkbenchProps = {
+  initialInputTag: InputTag;
+  initialShareError: string | null;
+  loadedFromShareUrl: boolean;
+};
+
+export function AaToNtWorkbench({
+  initialInputTag,
+  initialShareError,
+  loadedFromShareUrl,
+}: AaToNtWorkbenchProps) {
   const [inputTag, dispatch] = useReducer(
     (
-      state: InputTag | null,
+      state: InputTag,
       action: InputTagAction | { type: "bootstrap"; value: InputTag },
     ) => {
       if (action.type === "bootstrap") {
         return action.value;
       }
-      if (!state) {
-        return state;
-      }
       return inputTagReducer(state, action);
     },
-    null,
+    initialInputTag,
   );
   const [activeTab, setActiveTab] = useState<"codon" | "regions" | "designs">(
     "codon",
@@ -58,57 +49,10 @@ export function AaToNtWorkbench() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const didBootstrapRef = useRef(false);
-  const inputTagValue = searchParams.get("inputTag");
-
-  const bootstrapResult = useMemo(() => {
-    if (!defaultsQuery.data) {
-      return null;
-    }
-    if (!inputTagValue) {
-      return {
-        value: defaultsQuery.data,
-        loadedFromShareUrl: false,
-        error: null,
-      };
-    }
-    try {
-      return {
-        value: validateInputTagState(decodeInputTagFromUrlValue(inputTagValue)),
-        loadedFromShareUrl: true,
-        error: null,
-      };
-    } catch (caughtError) {
-      return {
-        value: defaultsQuery.data,
-        loadedFromShareUrl: false,
-        error:
-          caughtError instanceof Error
-            ? caughtError.message
-            : "Could not decode the shared URL.",
-      };
-    }
-  }, [defaultsQuery.data, inputTagValue]);
 
   const transformMutation = useMutation(
     transformWorkbookEndpointTransformWorkbookPostMutation(),
   );
-
-  useEffect(() => {
-    if (!bootstrapResult || didBootstrapRef.current) {
-      return;
-    }
-    dispatch({ type: "bootstrap", value: bootstrapResult.value });
-    didBootstrapRef.current = true;
-  }, [bootstrapResult]);
-
-  if (defaultsQuery.isLoading || !inputTag) {
-    return (
-      <div className="flex min-h-[40vh] items-center justify-center">
-        <LoaderCircle className="size-8 animate-spin text-[var(--accent)]" />
-      </div>
-    );
-  }
 
   const submitWorkbook = async () => {
     if (!selectedFile) {
@@ -198,7 +142,7 @@ export function AaToNtWorkbench() {
                 {message}
               </p>
             ) : null}
-            {bootstrapResult?.loadedFromShareUrl ? (
+            {loadedFromShareUrl ? (
               <p className="rounded-2xl border border-[var(--accent)]/30 bg-[var(--accent-soft)] px-4 py-3 text-sm text-[var(--foreground)]">
                 Loaded configuration from the share URL.
               </p>
@@ -208,9 +152,9 @@ export function AaToNtWorkbench() {
                 {error}
               </p>
             ) : null}
-            {!error && bootstrapResult?.error ? (
+            {!error && initialShareError ? (
               <p className="rounded-2xl border border-[var(--danger)]/30 bg-[var(--danger-soft)] px-4 py-3 text-sm text-[var(--danger-strong)]">
-                {bootstrapResult.error}
+                {initialShareError}
               </p>
             ) : null}
           </div>

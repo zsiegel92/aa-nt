@@ -124,17 +124,6 @@ export const zHealthzHealthzGetData = z.object({
  */
 export const zHealthzHealthzGetResponse = z.record(z.string(), z.string());
 
-export const zDefaultsDefaultsGetData = z.object({
-    body: z.optional(z.never()),
-    path: z.optional(z.never()),
-    query: z.optional(z.never())
-});
-
-/**
- * Successful Response
- */
-export const zDefaultsDefaultsGetResponse = zInputTag;
-
 export const zTransformWorkbookEndpointTransformWorkbookPostData = z.object({
     body: zTransformWorkbookRequest,
     path: z.optional(z.never()),

@@ -2,9 +2,7 @@ from __future__ import annotations
 
 from fastapi import Depends, FastAPI
 
-from aa_to_nt_backend.defaults import build_default_input_tag
 from aa_to_nt_backend.models import (
-    InputTag,
     TransformWorkbookRequest,
     TransformWorkbookResponse,
 )
@@ -20,11 +18,6 @@ webapp = FastAPI(
 @webapp.get("/healthz")
 async def healthz() -> dict[str, str]:
     return {"status": "ok"}
-
-
-@webapp.get("/defaults")
-async def defaults() -> InputTag:
-    return build_default_input_tag()
 
 
 @webapp.post("/transform-workbook")

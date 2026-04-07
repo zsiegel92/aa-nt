@@ -1,9 +1,7 @@
 import "server-only";
 
 import {
-  defaultsDefaultsGet,
   transformWorkbookEndpointTransformWorkbookPost,
-  type InputTag,
   type TransformWorkbookRequest,
   type TransformWorkbookResponse,
 } from "@/api/client";
@@ -22,14 +20,6 @@ const serverApiClient = createClient({
     Authorization: `Bearer ${apiKey}`,
   },
 });
-
-export async function fetchDefaults(): Promise<InputTag> {
-  const { data } = await defaultsDefaultsGet({
-    client: serverApiClient,
-    throwOnError: true,
-  });
-  return data;
-}
 
 export async function proxyTransformWorkbook(
   request: TransformWorkbookRequest,

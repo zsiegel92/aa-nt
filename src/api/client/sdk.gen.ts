@@ -2,8 +2,8 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { DefaultsDefaultsGetData, DefaultsDefaultsGetResponses, HealthzHealthzGetData, HealthzHealthzGetResponses, TransformWorkbookEndpointTransformWorkbookPostData, TransformWorkbookEndpointTransformWorkbookPostErrors, TransformWorkbookEndpointTransformWorkbookPostResponses } from './types.gen';
-import { zDefaultsDefaultsGetData, zDefaultsDefaultsGetResponse, zHealthzHealthzGetData, zHealthzHealthzGetResponse, zTransformWorkbookEndpointTransformWorkbookPostData, zTransformWorkbookEndpointTransformWorkbookPostResponse } from './zod.gen';
+import type { HealthzHealthzGetData, HealthzHealthzGetResponses, TransformWorkbookEndpointTransformWorkbookPostData, TransformWorkbookEndpointTransformWorkbookPostErrors, TransformWorkbookEndpointTransformWorkbookPostResponses } from './types.gen';
+import { zHealthzHealthzGetData, zHealthzHealthzGetResponse, zTransformWorkbookEndpointTransformWorkbookPostData, zTransformWorkbookEndpointTransformWorkbookPostResponse } from './zod.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -27,17 +27,6 @@ export const healthzHealthzGet = <ThrowOnError extends boolean = false>(options?
     responseValidator: async (data) => await zHealthzHealthzGetResponse.parseAsync(data),
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/healthz',
-    ...options
-});
-
-/**
- * Defaults
- */
-export const defaultsDefaultsGet = <ThrowOnError extends boolean = false>(options?: Options<DefaultsDefaultsGetData, ThrowOnError>) => (options?.client ?? client).get<DefaultsDefaultsGetResponses, unknown, ThrowOnError>({
-    requestValidator: async (data) => await zDefaultsDefaultsGetData.parseAsync(data),
-    responseValidator: async (data) => await zDefaultsDefaultsGetResponse.parseAsync(data),
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/defaults',
     ...options
 });
 

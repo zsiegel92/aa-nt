@@ -32,29 +32,6 @@
         ]
       }
     },
-    "/defaults": {
-      "get": {
-        "summary": "Defaults",
-        "operationId": "defaults_defaults_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InputTag"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
-      }
-    },
     "/transform-workbook": {
       "post": {
         "summary": "Transform Workbook Endpoint",

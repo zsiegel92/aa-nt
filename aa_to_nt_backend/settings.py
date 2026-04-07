@@ -15,8 +15,6 @@ class AppSettings(BaseSettings):
     )
 
     api_key: str = Field(alias="AA_TO_NT_API_KEY")
-    username: str = Field(alias="USERNAME")
-    password: str = Field(alias="PASSWORD")
     environment: str = os.environ.get("ENVIRONMENT", "development")
 
 
