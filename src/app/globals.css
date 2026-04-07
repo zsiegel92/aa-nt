@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f6f4eb;
+  --foreground: #1e281e;
+  --muted-foreground: #647166;
+  --panel: rgba(255, 253, 247, 0.92);
+  --panel-muted: #f1eddc;
+  --border: rgba(59, 80, 64, 0.16);
+  --border-strong: rgba(59, 80, 64, 0.28);
+  --accent: #204d3f;
+  --accent-strong: #17382e;
+  --accent-soft: rgba(32, 77, 63, 0.14);
+  --accent-foreground: #f7f2ea;
+  --danger: #a54a44;
+  --danger-strong: #8a3b35;
+  --danger-soft: rgba(165, 74, 68, 0.1);
+  --panel-shadow: 0 30px 90px rgba(31, 41, 30, 0.1);
+}
+
+html {
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.7), transparent 38%),
+    radial-gradient(circle at right 15% top 12%, rgba(66, 114, 86, 0.12), transparent 22%),
+    linear-gradient(180deg, #f7f6ef 0%, #ece8db 100%);
+  color: var(--foreground);
+  font-family:
+    "Iowan Old Style",
+    "Palatino Linotype",
+    "Book Antiqua",
+    "URW Palladio L",
+    serif;
+}
+
+body {
+  min-height: 100vh;
+  background: transparent;
+  color: var(--foreground);
+}
+
+* {
+  box-sizing: border-box;
+}

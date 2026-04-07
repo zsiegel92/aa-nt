@@ -3,7 +3,11 @@ from __future__ import annotations
 from fastapi import Depends, FastAPI
 
 from aa_to_nt_backend.defaults import build_default_input_tag
-from aa_to_nt_backend.models import InputTag, TransformWorkbookRequest, TransformWorkbookResponse
+from aa_to_nt_backend.models import (
+    InputTag,
+    TransformWorkbookRequest,
+    TransformWorkbookResponse,
+)
 from aa_to_nt_backend.security import require_api_key
 from aa_to_nt_backend.service import transform_workbook
 
