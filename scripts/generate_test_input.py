@@ -2,33 +2,35 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from openpyxl import Workbook
+from openpyxl import Workbook  # pyright: ignore[reportMissingModuleSource]
 
 OUTPUT_PATH = Path(__file__).resolve().parents[1] / "data" / "simple-default-input.xlsx"
 SHEET_NAME = "Sheet1"
 
-HEADERS = [
+HEADERS = (
     "sample_id",
     "AA452_7merSubs",
     "AA588_UpstreamFlank",
     "AA588_7merInsert",
     "AA588_DownstreamFlank",
-]
+)
 
-ROWS = [
-    ["sample-001", "AAAAAAA", "AA", "AAAAAAA", "AA"],
-    ["sample-002", "RSTVWYA", "GH", "LMNPQRS", "DE"],
-    ["sample-003", "CDEFGHI", "IK", "TVWYACD", "LM"],
-    ["sample-004", "KLMNPQR", "NP", "EFGHIKL", "QR"],
-    ["sample-005", "TVWYACD", "ST", "RSTVWYA", "GH"],
-    ["sample-006", "GHIKLMN", "VW", "CDEFGHI", "NP"],
-]
+ROWS = (
+    ("sample-001", "AAAAAAA", "AA", "AAAAAAA", "AA"),
+    ("sample-002", "RSTVWYA", "GH", "LMNPQRS", "DE"),
+    ("sample-003", "CDEFGHI", "IK", "TVWYACD", "LM"),
+    ("sample-004", "KLMNPQR", "NP", "EFGHIKL", "QR"),
+    ("sample-005", "TVWYACD", "ST", "RSTVWYA", "GH"),
+    ("sample-006", "GHIKLMN", "VW", "CDEFGHI", "NP"),
+)
 
 
 def build_workbook() -> Workbook:
     workbook = Workbook()
-    worksheet = workbook.active
-    worksheet.title = SHEET_NAME
+    default_sheet = workbook.active
+    if default_sheet is not None:
+        workbook.remove(default_sheet)
+    worksheet = workbook.create_sheet(title=SHEET_NAME)
     worksheet.append(HEADERS)
     for row in ROWS:
         worksheet.append(row)
