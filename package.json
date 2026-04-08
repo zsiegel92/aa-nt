@@ -5,6 +5,7 @@
   "packageManager": "pnpm@10.18.2",
   "scripts": {
     "dev": "concurrently \"pnpm run python:dev\" \"pnpm run next:dev\"",
+    "dev:local": "concurrently \"pnpm run python:dev:local\" \"pnpm run next:dev\"",
     "next:dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -15,7 +16,7 @@
     "tsgo-check": "tsgo -p tsconfig.json --noEmit",
     "test": "vitest run",
     "python:dev": "uv run modal serve server.py",
-    "python:dev:fastapi": "uv run uvicorn server:webapp --reload --port 8000",
+    "python:dev:local": "uv run uvicorn server:webapp --reload --port 8000",
     "python:dump-openapi": "uv run python dump_openapi.py",
     "python:lint": "uv run ruff check .",
     "python:format": "uv run ruff format --check .",
