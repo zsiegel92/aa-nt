@@ -4,7 +4,6 @@ from pathlib import Path
 
 from openpyxl import Workbook
 
-
 OUTPUT_PATH = Path(__file__).resolve().parents[1] / "data" / "simple-default-input.xlsx"
 SHEET_NAME = "Sheet1"
 

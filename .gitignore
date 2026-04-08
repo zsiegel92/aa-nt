@@ -16,3 +16,4 @@ node_modules/
 coverage/
 tsconfig.tsbuildinfo
 PLAN.md
+**/.DS_Store
