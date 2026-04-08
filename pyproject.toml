@@ -24,7 +24,7 @@ dev = [
 ]
 
 [tool.pyright]
-include = ["aa_to_nt_backend", "tests/backend", "server.py", "dump_openapi.py"]
+include = ["aa_to_nt_backend", "tests/backend", "server.py", "dump_openapi.py","scripts"]
 pythonVersion = "3.12"
 typeCheckingMode = "strict"
 reportMissingTypeStubs = false
