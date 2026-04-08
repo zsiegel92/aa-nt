@@ -15,6 +15,7 @@ image = (
 app = modal.App(
     name="aa-to-nt-app",
     image=image,
+    secrets=[modal.Secret.from_name("aa-to-nt")],
 )
 
 
