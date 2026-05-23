@@ -262,7 +262,10 @@ function CodonMapsPanel({
           <tr className="text-left text-xs uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
             <th className="min-w-60 px-3 pb-4">AA</th>
             {inputTag.codon_maps.map((codonMap, index) => (
-              <th className="min-w-96 px-3 pb-4 align-top" key={codonMap.name}>
+              <th
+                className="min-w-96 px-3 pb-4 align-top"
+                key={`codon-map-${index}`}
+              >
                 <div className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--panel-muted)] p-4">
                   <Input
                     value={codonMap.name}
@@ -317,7 +320,7 @@ function CodonMapsPanel({
               {inputTag.codon_maps.map((codonMap, index) => (
                 <td
                   className="px-3 py-2 align-top"
-                  key={`${codonMap.name}-${aminoAcid.code}`}
+                  key={`codon-map-${index}-${aminoAcid.code}`}
                 >
                   <div className="flex flex-wrap gap-2 rounded-[1.5rem] border border-[var(--border)] bg-white p-4">
                     {aminoAcid.codons.map((codonOption, codonOptionIndex) => {
@@ -331,7 +334,7 @@ function CodonMapsPanel({
                               ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--foreground)] shadow-sm"
                               : "border-[var(--border)] bg-[var(--panel-muted)] text-[var(--muted-foreground)] hover:border-[var(--accent)] hover:text-[var(--foreground)]",
                           )}
-                          key={`${codonMap.name}-${aminoAcid.code}-${codonOption}`}
+                          key={`${aminoAcid.code}-${codonOption}`}
                           onClick={() =>
                             dispatch({
                               type: "updateCodonMap",
@@ -401,7 +404,7 @@ function RegionsPanel({
               "rounded-[1.8rem] border border-[var(--border)] bg-[var(--panel-muted)] p-5",
               accentClass,
             )}
-            key={`${chain.head.name}-${chainIndex}`}
+            key={`region-chain-${chainIndex}`}
           >
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
@@ -429,7 +432,7 @@ function RegionsPanel({
                   <RegionEditorCard
                     accentClass={accentClass}
                     dispatch={dispatch}
-                    key={region.name}
+                    key={`region-${regionIndex}`}
                     region={region}
                     regionIndex={regionIndex}
                     regions={inputTag.regions}
@@ -546,8 +549,11 @@ function RegionEditorCard({
                 <option value="">
                   {eligiblePredecessors.length > 0 ? "None" : "---"}
                 </option>
-                {eligiblePredecessors.map((candidate) => (
-                  <option key={candidate.name} value={candidate.name}>
+                {eligiblePredecessors.map((candidate, candidateIndex) => (
+                  <option
+                    key={`predecessor-${candidateIndex}`}
+                    value={candidate.name}
+                  >
                     {candidate.name}
                   </option>
                 ))}
@@ -899,7 +905,7 @@ function DesignsPanel({
       />
       {inputTag.designs.map((design, designIndex) => (
         <div
-          key={`${design.id}-${design.version}-${designIndex}`}
+          key={`design-${designIndex}`}
           className="rounded-[1.6rem] border border-[var(--border)] bg-[var(--panel-muted)] p-5"
         >
           <div className="flex flex-wrap items-end justify-between gap-4">
@@ -939,9 +945,9 @@ function DesignsPanel({
             </div>
           </div>
           <div className="mt-5 grid gap-4 lg:grid-cols-2">
-            {orderedRegions.map((region) => (
+            {orderedRegions.map((region, regionIndex) => (
               <label
-                key={`${design.id}-${region.name}`}
+                key={`design-${designIndex}-region-${regionIndex}`}
                 className="space-y-2 text-sm font-medium"
               >
                 <span className="text-[var(--muted-foreground)]">
@@ -963,8 +969,11 @@ function DesignsPanel({
                   {region.constant_nt ? (
                     <option value="">constant_nt - not mapped</option>
                   ) : null}
-                  {inputTag.codon_maps.map((codonMap) => (
-                    <option key={codonMap.name} value={codonMap.name}>
+                  {inputTag.codon_maps.map((codonMap, codonMapIndex) => (
+                    <option
+                      key={`design-codon-map-${codonMapIndex}`}
+                      value={codonMap.name}
+                    >
                       {codonMap.name}
                     </option>
                   ))}
